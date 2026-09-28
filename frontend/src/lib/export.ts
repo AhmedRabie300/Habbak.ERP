@@ -1,6 +1,6 @@
-import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { rowsToWorkbookBuffer, rowsToCsvText } from './spreadsheet';
 
 export interface ExportColumn<T> {
   header: string;
@@ -11,19 +11,23 @@ export interface ExportColumn<T> {
  * Export policy (00-Project-Overview.md, section 8.5): Excel as the primary format for
  * lists/reports, PDF for official documents, CSV for re-import elsewhere, plus direct print.
  * Exports only the rows currently displayed (after filters/search) — never the whole table.
+ * Switched from SheetJS (`xlsx`) to ExcelJS: the `xlsx` package on the npm registry is capped at
+ * 0.18.5 (SheetJS stopped publishing newer builds there), which carries two unpatched high-severity
+ * advisories (prototype pollution, ReDoS) — real exposure here since parseSpreadsheetFile in
+ * lib/import.ts feeds it user-uploaded files. The patched SheetJS builds only exist on
+ * cdn.sheetjs.com, which some network policies block outright (the reason for this switch).
  */
-export function exportToExcel<T>(rows: T[], columns: ExportColumn<T>[], fileName: string) {
-  const data = rows.map((row) => Object.fromEntries(columns.map((c) => [c.header, c.value(row)])));
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-  XLSX.writeFile(workbook, `${fileName}.xlsx`);
+export async function exportToExcel<T>(rows: T[], columns: ExportColumn<T>[], fileName: string) {
+  const headers = columns.map((c) => c.header);
+  const data = rows.map((row) => columns.map((c) => c.value(row)));
+  const buffer = await rowsToWorkbookBuffer(headers, data);
+  downloadBlob(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${fileName}.xlsx`);
 }
 
 export function exportToCsv<T>(rows: T[], columns: ExportColumn<T>[], fileName: string) {
-  const data = rows.map((row) => Object.fromEntries(columns.map((c) => [c.header, c.value(row)])));
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const csv = XLSX.utils.sheet_to_csv(worksheet);
+  const headers = columns.map((c) => c.header);
+  const data = rows.map((row) => columns.map((c) => c.value(row)));
+  const csv = rowsToCsvText(headers, data);
   const blob = new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8;' });
   downloadBlob(blob, `${fileName}.csv`);
 }
@@ -174,7 +178,7 @@ function collectStylesheetText(): string {
   return chunks.join('\n');
 }
 
-function downloadBlob(blob: Blob, fileName: string) {
+export function downloadBlob(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

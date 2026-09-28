@@ -1,11 +1,14 @@
-import * as XLSX from 'xlsx';
+import { parseCsvText, parseWorkbookBuffer, rowsToWorkbookBuffer } from './spreadsheet';
+import { downloadBlob } from './export';
 
-/** Parses an uploaded .xlsx/.csv file into an array of plain row objects keyed by header. */
+/** Parses an uploaded .xlsx/.csv file into an array of plain row objects keyed by header.
+ * Legacy binary .xls is not supported (ExcelJS reads/writes .xlsx only) — same limitation as the
+ * "Download Template" button below, which only ever produces .xlsx. */
 export async function parseSpreadsheetFile(file: File): Promise<Record<string, string>[]> {
-  const buffer = await file.arrayBuffer();
-  const workbook = XLSX.read(buffer, { type: 'array' });
-  const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-  return XLSX.utils.sheet_to_json<Record<string, string>>(firstSheet, { defval: '' });
+  if (file.name.toLowerCase().endsWith('.csv')) {
+    return parseCsvText(await file.text());
+  }
+  return parseWorkbookBuffer(await file.arrayBuffer());
 }
 
 export interface ImportColumn {
@@ -17,9 +20,7 @@ export interface ImportColumn {
 
 /** My Remarks/Remarks2.md, remark 3.2 — every screen with an import button gets a "Download
  * Template" button right next to it, so the header row (and casing) is never guessed by hand. */
-export function downloadImportTemplate(columns: ImportColumn[], fileName: string) {
-  const worksheet = XLSX.utils.json_to_sheet([Object.fromEntries(columns.map((c) => [c.header, c.example ?? '']))]);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
-  XLSX.writeFile(workbook, `${fileName}.xlsx`);
+export async function downloadImportTemplate(columns: ImportColumn[], fileName: string) {
+  const buffer = await rowsToWorkbookBuffer(columns.map((c) => c.header), [columns.map((c) => c.example ?? '')], 'Template');
+  downloadBlob(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${fileName}.xlsx`);
 }
