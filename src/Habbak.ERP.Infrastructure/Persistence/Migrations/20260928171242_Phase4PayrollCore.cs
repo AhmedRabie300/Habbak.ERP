@@ -12,6 +12,57 @@ namespace Habbak.ERP.Infrastructure.Persistence.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "EmployeeTaxProfiles",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CompanyId = table.Column<long>(type: "bigint", nullable: true),
+                    EmployeeId = table.Column<long>(type: "bigint", nullable: false),
+                    TaxYear = table.Column<int>(type: "int", nullable: false),
+                    IsExempt = table.Column<bool>(type: "bit", nullable: false),
+                    ExemptionReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    YtdTaxableIncome = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    YtdTaxWithheld = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedBy = table.Column<long>(type: "bigint", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmployeeTaxProfiles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EmployeeTaxProfiles_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_EmployeeTaxProfiles_Users_CreatedBy",
+                        column: x => x.CreatedBy,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_EmployeeTaxProfiles_Users_DeletedBy",
+                        column: x => x.DeletedBy,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_EmployeeTaxProfiles_Users_UpdatedBy",
+                        column: x => x.UpdatedBy,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PayrollPeriods",
                 columns: table => new
                 {
@@ -380,11 +431,11 @@ namespace Habbak.ERP.Infrastructure.Persistence.Migrations
                     PayrollRunId = table.Column<long>(type: "bigint", nullable: false),
                     EmployeeId = table.Column<long>(type: "bigint", nullable: false),
                     CostCenterDimensionValueId = table.Column<long>(type: "bigint", nullable: true),
-                    SalaryComponentId = table.Column<long>(type: "bigint", nullable: false),
+                    SalaryComponentId = table.Column<long>(type: "bigint", nullable: true),
                     Amount = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     Quantity = table.Column<decimal>(type: "decimal(9,4)", precision: 9, scale: 4, nullable: true),
                     RateSnapshot = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SourceType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    SourceType = table.Column<int>(type: "int", nullable: false),
                     SourceId = table.Column<long>(type: "bigint", nullable: true),
                     RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -565,6 +616,18 @@ namespace Habbak.ERP.Infrastructure.Persistence.Migrations
                 column: "SalaryComponentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EmployeeTaxProfiles_CompanyId",
+                table: "EmployeeTaxProfiles",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmployeeTaxProfiles_EmployeeId_TaxYear",
+                table: "EmployeeTaxProfiles",
+                columns: new[] { "EmployeeId", "TaxYear" },
+                unique: true,
+                filter: "[IsDeleted] = 0");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PayrollLines_CompanyId",
                 table: "PayrollLines",
                 column: "CompanyId");
@@ -695,6 +758,9 @@ namespace Habbak.ERP.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "EmployeeSalaries");
+
+            migrationBuilder.DropTable(
+                name: "EmployeeTaxProfiles");
 
             migrationBuilder.DropTable(
                 name: "PayrollLines");

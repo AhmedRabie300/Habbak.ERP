@@ -130,10 +130,18 @@ public class PayrollRun : AuditableEntity, ICompanyScopedEntity
 /// payslip never changes even if the legal tables are amended later — same free-text-JSON-column
 /// approach as PostingTemplate.TemplateSnapshotJson, Phase-4-Research.md §1.4, serialized manually
 /// with System.Text.Json since no HasConversion JSON helper exists in the codebase yet).
-/// <see cref="SourceType"/>+<see cref="SourceId"/> point at the record this line was computed from
-/// (an OvertimeRequest, a TipsDistributionLine, an EmployeeSalary row, …) — distinct from
-/// SalaryComponent.SourceType, which only says what *kind* of source a component uses (§2.3 module
-/// doc note, Phase-4-Research.md §1.1).</summary>
+///
+/// <see cref="SalaryComponentId"/> is nullable (2026-09-28 decision, HR-MASTER-PLAN.md §Phase 4
+/// Amendments Log): the three statutory deductions (<see cref="PayrollLineSource.LegalSocialInsurance"/>/
+/// <see cref="PayrollLineSource.LegalTax"/>/<see cref="PayrollLineSource.LegalMartyrsFund"/>) read
+/// straight from the legal tables, not from a SalaryComponent — SalaryComponent.CalculationMethod
+/// (Fixed/PercentOfBasic/Hourly/Formula) has no case for "computed from a legal table", and seeding a
+/// placeholder SalaryComponent per company just to satisfy a required FK would be a fake catalog entry
+/// nobody configured. Every other source (EmployeeSalary, Overtime, Tips, Penalty, AdvanceInstallment)
+/// does carry a real SalaryComponentId. <see cref="SourceType"/> (a typed enum, not a free string) says
+/// which kind of line this is; <see cref="SourceId"/> points at the specific backing record when there
+/// is a single one (an OvertimeRequest, a TipsDistributionLine, the legal table row actually applied) —
+/// null for lines aggregated over several records (e.g. Absence over several Attendance rows).</summary>
 public class PayrollLine : AuditableEntity, ICompanyScopedEntity, IBranchScopedEntity, IEmployeeScopedEntity
 {
     public long? CompanyId { get; set; }
@@ -147,8 +155,8 @@ public class PayrollLine : AuditableEntity, ICompanyScopedEntity, IBranchScopedE
 
     public long? CostCenterDimensionValueId { get; set; }
 
-    public long SalaryComponentId { get; set; }
-    public SalaryComponent SalaryComponent { get; set; } = null!;
+    public long? SalaryComponentId { get; set; }
+    public SalaryComponent? SalaryComponent { get; set; }
 
     public decimal Amount { get; set; }
     public decimal? Quantity { get; set; }
@@ -157,7 +165,7 @@ public class PayrollLine : AuditableEntity, ICompanyScopedEntity, IBranchScopedE
     /// column (Phase-4-Research.md §1.4).</summary>
     public string? RateSnapshot { get; set; }
 
-    public string? SourceType { get; set; }
+    public PayrollLineSource SourceType { get; set; }
     public long? SourceId { get; set; }
 }
 
@@ -180,6 +188,27 @@ public class Payslip : AuditableEntity, ICompanyScopedEntity, IEmployeeScopedEnt
     public DateTime IssuedAtUtc { get; set; }
     public string? PdfPath { get; set; }
     public DateTime? ViewedAtUtc { get; set; }
+}
+
+/// <summary>One employee's cumulative tax position for one calendar year — §2.3. Pulled forward from
+/// Phase 5 into Phase 4 (2026-09-28 decision, HR-MASTER-PLAN.md §Phase 4 Amendments Log): rule 37
+/// requires tax to be computed annually and installmented monthly off this row's running totals, and
+/// PayrollRunType.AnnualTaxSettlement (already built here, Domain/Payroll/Enums.cs) only makes sense
+/// against a real year-to-date accumulator — a monthly-only approximation would produce numbers a
+/// posted, frozen Payslip (rule 29/38) could never later correct. One row per employee per TaxYear
+/// (a new row is created, not reused, when the year rolls over).</summary>
+public class EmployeeTaxProfile : AuditableEntity, ICompanyScopedEntity, IEmployeeScopedEntity
+{
+    public long? CompanyId { get; set; }
+
+    public long EmployeeId { get; set; }
+    public Employee Employee { get; set; } = null!;
+
+    public int TaxYear { get; set; }
+    public bool IsExempt { get; set; }
+    public string? ExemptionReason { get; set; }
+    public decimal YtdTaxableIncome { get; set; }
+    public decimal YtdTaxWithheld { get; set; }
 }
 
 /// <summary>A branch's tips pool for one period, split among employees — §2.3/§4.7. Approved

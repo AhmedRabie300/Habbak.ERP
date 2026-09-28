@@ -131,6 +131,7 @@ public interface IApplicationDbContext
     DbSet<PayrollRun> PayrollRuns { get; }
     DbSet<PayrollLine> PayrollLines { get; }
     DbSet<Payslip> Payslips { get; }
+    DbSet<EmployeeTaxProfile> EmployeeTaxProfiles { get; }
     DbSet<TipsDistribution> TipsDistributions { get; }
     DbSet<TipsDistributionLine> TipsDistributionLines { get; }
 

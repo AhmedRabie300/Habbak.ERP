@@ -265,6 +265,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<PayrollRun> PayrollRuns => Set<PayrollRun>();
     public DbSet<PayrollLine> PayrollLines => Set<PayrollLine>();
     public DbSet<Payslip> Payslips => Set<Payslip>();
+    public DbSet<EmployeeTaxProfile> EmployeeTaxProfiles => Set<EmployeeTaxProfile>();
     public DbSet<TipsDistribution> TipsDistributions => Set<TipsDistribution>();
     public DbSet<TipsDistributionLine> TipsDistributionLines => Set<TipsDistributionLine>();
 

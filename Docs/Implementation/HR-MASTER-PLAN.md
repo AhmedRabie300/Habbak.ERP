@@ -298,28 +298,69 @@ Sub-Batches:
 
 ### Phase 4 — الرواتب
 
-**النطاق**: الجداول القانونية المؤرّخة (`MinimumWage`, `SocialInsuranceRate`, `InsurableWageLimit`, `PayrollTaxBracketSet`+`PayrollTaxBracket`, `MartyrsFundRate`, `OvertimeRate`, `LeaveEntitlementRule`, `PenaltyDeductionCap`, `NoticePeriodRule` — **9 أو 10 جدول حسب عدّ `PayrollTaxBracketSet`/`PayrollTaxBracket` كجدولين منفصلين، يتأكد بالعدّ الفعلي وقت Research 4.1، مش تخمين**) + `SalaryComponent`/`SalaryStructure`/`EmployeeSalary` + `PayrollPeriod`/`PayrollRun`/`PayrollLine`/`Payslip` + محرك الحساب + التكامل المحاسبي.
+**النطاق** (محدّث بعد `Phase-4-Research.md` والقرارات المعتمدة 2026-09-28): **11 جدول قانوني مؤرّخ** —
+`MinimumWage`, `SocialInsuranceRate`, `InsurableWageLimit`, `PayrollTaxBracketSet`+`PayrollTaxBracket`
+(جدولين حقيقيين، العدد النهائي 10 مش "9 أو 10")، `MartyrsFundRate`, `OvertimeRate`,
+`LeaveEntitlementRule`, `PenaltyDeductionCap`, `NoticePeriodRule`، + **`EndOfServicePolicy`** (أُضيف
+هنا رغم إنه مش معدود صراحة في أي Phase أصلًا — Phase-4-Research.md §2.2 — لأن قالب مخصص نهاية الخدمة
+الشهري محتاج `PolicyType` عشان يقرر يرحّل ولا لأ) — + `SalaryComponent`/`SalaryStructure`(+Line)/
+`EmployeeSalary` + `PayrollPeriod`/`PayrollRun`/`PayrollLine`/`Payslip` + **`EmployeeTaxProfile`**
+(أُضيف هنا من Phase 5 — قاعدة 37 والـ`AnnualTaxSettlement` محتاجينه فعليًا للتراكم السنوي، والقسائم
+بعد الاعتماد بتتجمّد فمفيش مجال لتقريب مؤقت يتصحح لاحقًا) + `TipsDistribution`+`TipsDistributionLine`
+(أُضيفوا هنا مش Phase 5 — Phase-4-Research.md §2.4، رقمهم جوه مدى قواعد الرواتب 28-40 والقالب السابع
+من §6.2) + محرك الحساب + التكامل المحاسبي.
+
+**`PayrollLine.SalaryComponentId` قرار: Nullable** (مش إلزامي زي ما كان مخطط بادئ ذي بدء) — الخصومات
+القانونية (تأمينات/ضريبة/صندوق شهداء) مالهاش `SalaryComponent` حقيقي أصلًا (`CalculationMethod`
+الحالي: `Fixed`/`PercentOfBasic`/`Hourly`/`Formula` — ولا واحدة فيهم تمثّل "من جدول قانوني")، فبتتسجّل
+بـ`SalaryComponentId = null` ومصدرها من enum جديد **`PayrollLineSource`** (`EmployeeSalary`/
+`Overtime`/`Tips`/`Penalty`/`AdvanceInstallment`/`LegalSocialInsurance`/`LegalTax`/`LegalMartyrsFund`/
+`Absence`/`PriorPeriodAdjustment`) بدل نص حر.
 
 **قواعد جوهرية** (قواعد 28-40):
-- المعادلة: أساسي + بدلات + إضافي + بقشيش − غياب − جزاءات (بسقف) − أقساط سلف − تأمينات − ضريبة − صندوق شهداء = صافي.
-- كل `PayrollLine` بيحتفظ بـ `RateSnapshot` — إعادة طباعة قسيمة قديمة بتطلع زي ما هي حتى لو الجداول اتغيّرت.
-- **🔴 Idempotency إلزامي على 3 مستويات**: مفتاح التشغيل (`PayrollRun.IdempotencyKey`، نفس نمط `DepreciationRunKeys.For`) + مفتاح الترحيل + مفتاح الصرف. `Regular` واحد بس لكل شركة وشهر؛ `Supplementary`/`FinalSettlement` بـ `ReferenceId`؛ `AnnualTaxSettlement` واحد لكل سنة.
-- Cutoff: بعد `PayrollPeriod.CutoffDate` الفترة `Locked`، وأي إدخال متأخر = سطر تسوية في الشهر اللي بعده (مفيش إعادة حساب لتشغيل مرحّل).
-- مراجعة استثناءات إلزامية قبل الاعتماد (صافي سالب، تحت الحد الأدنى، تغيّر مفاجئ، موظف Active بدون تسجيل تأميني).
+- المعادلة: أساسي + بدلات (`EmployeeSalary`) + إضافي (`Attendance`/`OvertimeRequest`) + بقشيش
+  (`TipsDistribution`) − غياب (`Attendance`) − جزاءات (`EmployeePenalty`، **Phase 5 — صفر فعليًا لحد
+  ما الكيان يتبني**) − أقساط سلف (`AdvanceInstallment`، **Phase 5 — صفر فعليًا**) − تأمينات
+  (`LegalSocialInsurance`) − ضريبة (`LegalTax`، عن طريق `EmployeeTaxProfile` التراكمي) − صندوق شهداء
+  (`LegalMartyrsFund`) = صافي.
+- كل `PayrollLine` بيحتفظ بـ `RateSnapshot` (JSON، `System.Text.Json` يدوي — مفيش `HasConversion`
+  جاهز في الكود) — إعادة طباعة قسيمة قديمة بتطلع زي ما هي حتى لو الجداول اتغيّرت.
+- **🔴 Idempotency إلزامي على 3 مستويات**: مفتاح التشغيل (`PayrollRun.IdempotencyKey`، نفس نمط
+  `DepreciationRunKeys.For`) + مفتاح الترحيل (`PostingKeys.For(..., "PayrollRun.Post", ...)`) + مفتاح
+  الصرف (`"PayrollRun.Pay"`). `Regular` واحد بس لكل شركة وشهر؛ `Supplementary`/`FinalSettlement`
+  بـ `ReferenceId`؛ `AnnualTaxSettlement` واحد لكل سنة.
+- Cutoff: بعد `PayrollPeriod.CutoffDate` الفترة `Locked`، وأي إدخال متأخر = سطر تسوية في الشهر اللي
+  بعده (`PayrollLineSource.PriorPeriodAdjustment`، مفيش إعادة حساب لتشغيل مرحّل).
+- مراجعة استثناءات إلزامية قبل الاعتماد (صافي سالب، تحت الحد الأدنى، تغيّر مفاجئ، موظف `Active` بدون
+  تسجيل تأميني) — بتطلق `NotificationType.PayrollExceptionReview` (موجود من Phase 2.5، Schema-ready
+  من غير أي مُرسِل لحد دلوقتي).
+- خطوة اعتماد إضافية على سلسلة الإضافي لو `OvertimeRequest` تجاوز الحد الشهري (مؤجّلة من Phase 3،
+  `Phase-3-Final.md §7` بند 5 — الجدول القانوني نفسه مبني دلوقتي في 4.2).
 
-**التكامل المحاسبي** (7 قوالب عن طريق `IPostingService`، `CostCenterId` إلزامي على كل سطر): استحقاق الرواتب، صرف الرواتب، صرف سلفة، مخصص الإجازات الشهري، مخصص نهاية الخدمة الشهري، تسوية نهاية الخدمة، توزيع البقشيش.
+**التكامل المحاسبي** (6 قوالب عن طريق `IPostingService`، مش 7 — قالب "صرف سلفة" أُجّل لـ Phase 5 مع
+كيان `EmployeeAdvance` نفسه؛ `CostCenterId` عن طريق Dimensions [`PostingGroupItem.Dimensions`] مش
+عمود مفرد، Phase-4-Research.md §1.2): استحقاق الرواتب، صرف الرواتب، مخصص الإجازات الشهري، مخصص نهاية
+الخدمة الشهري (بس لو `EndOfServicePolicy ≠ None`)، تسوية نهاية الخدمة (Schema-ready/غير مستخدَم لحد
+Phase 5 — نفس نمط `SourceDocumentType.Payroll` اللي قعد Schema-ready لمراحل قبل Phase 4)، توزيع
+البقشيش.
 
 Sub-Batches:
-- **4.1** — Research Pass (شامل تأكيد عدد الجداول القانونية الفعلي).
-- **4.2** — Legal Tables.
-- **4.3** — Domain (كيانات الرواتب).
-- **4.4** — Payroll Engine (المحرك + الـ Idempotency الثلاثي).
-- **4.5** — Posting Integration (7 قوالب).
-- **4.6** — API.
-- **4.7** — Frontend.
+- **4.1** — Research Pass ✅ (`Phase-4-Research.md`، تأكيد 10 جداول قانونية حقيقية).
+- **4.2** — Legal Tables ✅ (11 جدول شامل `EndOfServicePolicy` + نمط `AsOf(date)`/
+  `IEffectiveDatedEntity` من الصفر).
+- **4.3** — Domain (`SalaryComponent`/`SalaryStructure`+Line/`EmployeeSalary`/`PayrollPeriod`/
+  `PayrollRun`/`PayrollLine`/`Payslip` + `TipsDistribution`+Line + **`EmployeeTaxProfile`** [مسحوب من
+  Phase 5] + enum **`PayrollLineSource`**).
+- **4.4** — Payroll Engine (المحرك + الـ Idempotency الثلاثي + مراجعة الاستثناءات + خطوة اعتماد
+  الإضافي فوق الحد).
+- **4.5** — Posting Integration (11 دور جديد في `CompanyAccountRole` + 6 قوالب).
+- **4.6** — API (Controllers + تسجيل الشاشات + `FieldPermissionCatalog` + `HrSettings`: 3 حقول).
+- **4.7** — Frontend (شاشات الرواتب + خطوة "راتب" جديدة في `HR_HIRING` Wizard).
 - **4.8** — Tests + Docs.
 
-**مرجع**: `Docs/Modules/10-Module-HR-Payroll.md §2.3` + §2.4 + قواعد 28-40 + §4.3 + §6.2. **يعتمد على**: Phase 3 (`Attendance` بتغذي الحساب) + Phase 2 (اعتماد التشغيل).
+**مرجع**: `Docs/Modules/10-Module-HR-Payroll.md §2.3` + §2.4 + قواعد 28-40 + §4.3 + §6.2 +
+`Docs/Implementation/Phase-4-Research.md`. **يعتمد على**: Phase 3 (`Attendance` بتغذي الحساب) +
+Phase 2 (اعتماد التشغيل).
 
 ---
 
@@ -327,7 +368,7 @@ Sub-Batches:
 
 > **هنا** — مش Phase 1.4 — مكان الحساب المالي الكامل لإنهاء الخدمة.
 
-**النطاق**: `EmployeeAdvance`+`AdvanceInstallment`, `EmployeePenalty`, `EmployeeBonus`, `EmployeeDeduction`, `EmployeeEndOfService`, `EndOfServiceHeir`, `EmployeeSocialInsurance`, `EmployeeTaxProfile` (+ `PenaltyType`/`BonusType`/`DeductionType` Lookups).
+**النطاق**: `EmployeeAdvance`+`AdvanceInstallment`, `EmployeePenalty`, `EmployeeBonus`, `EmployeeDeduction`, `EmployeeEndOfService`, `EndOfServiceHeir`, `EmployeeSocialInsurance` (+ `PenaltyType`/`BonusType`/`DeductionType` Lookups). **`EmployeeTaxProfile` مش هنا** — اتسحب لـ Phase 4.3 (2026-09-28، قسم 7 Amendments Log) لأن قاعدة 37 و`AnnualTaxSettlement` محتاجينه فعليًا وقت حساب الرواتب العادي، مش بس وقت التسوية.
 
 **قواعد جوهرية** (قواعد 36، 41-49):
 - مستحقات نهاية الخدمة مكوّنات صريحة (`LeaveCashOut`, `NoticePay`, `Compensation`, `ContractualGratuity`) — `ContractualGratuity` بس لو `EndOfServicePolicy.PolicyType = Contractual` (**⏸️ Pending Legal**).
@@ -434,8 +475,13 @@ User: "كمّل Phase X+1"
 
 **قرار 1.5.4 (`3 Followers Tabs`)**: **اتلغت — مكررة بالكامل**. التبويبات الثلاثة (عقود/مستندات/شهادات) اتبنت كاملة الوظائف من 1.5.3 نفسها (مش Placeholders محتاجة تكملة)، زي ما طلب المستخدم صراحة ("لو 1.5.3 خلصت التبويبات كاملة → 1.5.4 مكررة"). الانتقال المباشر لـ 1.5.5.
 
+**Phase 4 (جارية)** — `Phase-4-Research.md` (4.1) + 4.2 (11 جدول قانوني + `IEffectiveDatedEntity`) +
+4.3 (`SalaryComponent`..`Payslip` + `TipsDistribution`+Line + `EmployeeTaxProfile` + enum
+`PayrollLineSource`) منجزين، Migrations اتولّدت ضد الـModel بس (Cloud، بدون Apply). تفاصيل كل
+Sub-Batch في §7 Amendments Log تحت. 4.4 (Payroll Engine) جارية.
+
 **قادمة (لسه محدش بدأ فيها)**:
-- Phase 4 → Phase 7 بالترتيب في قسم 4.
+- باقي Phase 4 (4.4 → 4.8) ثم Phase 5 → Phase 7.
 
 > ملاحظة دقة: القالب الأصلي لهذا الملف افترض إن Phase 1.2 "جارية" — ده مش صحيح فعليًا وقت كتابة هذا الملف، لسه محدش بدأ فيها. صُحّح هنا بدل ما يتكرر الافتراض.
 
@@ -459,4 +505,6 @@ User: "كمّل Phase X+1"
 | 2026-09-28 | **Phase 3B اعتُمدت رسميًا (Approved)** بعد جولتين تحقق كاملتين (Cloud ثم Local) | `Phase-3B-Final.md` + `Phase-3B-Cloud-Report.md` (قسم Local Verification Results) — IntegrationTests 238/238، ApiTests 277/277، Frontend 9/9 على الجهاز المحلي. الانتقال لـ**Phase 3C** (بنود 1-4 من `Remarks8-HR-Enhancements.md`) |
 | 2026-09-28 | Phase 3C (بنود 1-4 من `Remarks8-HR-Enhancements.md`) — الجانب الخاص بالـCloud منجز (3C.2 → 3C.6): `EmploymentContractLine`، `AttachmentId?` على العقد/الشهادة، `SetAttachment` Commands، Line Editor في تاب العقود + Hiring Wizard | تفاصيل كاملة في `Phase-3C-Research.md` (القرارات المعتمدة) و`Phase-3C-Final.md` (التنفيذ). Migration واحدة شاملة (`EmploymentContractLinesAndAttachments`) طبقًا لقرار المستخدم؛ 7 اختبارات تكامل جديدة نجحت 7/7 ضد SQL Server حقيقي (Testcontainers) في الـCloud. بانتظار Local Verification قبل اعتماد المرحلة رسميًا |
 | 2026-09-28 | **Phase 3C اعتُمدت رسميًا (Approved)** بعد جولتين تحقق كاملتين (Cloud ثم Local) | `Phase-3C-Final.md §6` (Local Verification Results) — 627 تشغيلة اختبار (96 HR + 245 IntegrationTests + 277 ApiTests + 9 Frontend)، صفر Failures، صفر Bugs مكتشفة. تحقق يدوي End-to-End أكّد الأربع بنود كاملة (بنود العقد عن طريق Renew، مرفقات العقود/الشهادات، Hiring Wizard) شامل صحة الترميز العربي. لا يوجد Blocker لبدء Phase 4 |
+| 2026-09-28 | Phase 4 Research Pass: عدد الجداول القانونية اتثبّت 10 (مش "9 أو 10")، `EndOfServicePolicy` أُضيف كجدول قانوني 11، `TipsDistribution`+`TipsDistributionLine` اتسحبوا لـ Phase 4 (مش Phase 5)، قالب "صرف سلفة" أُجّل لـ Phase 5 مع `EmployeeAdvance` نفسه (Phase 4 = 6 قوالب ترحيل مش 7)، خطوة اعتماد "الإضافي فوق الحد الشهري" (مؤجّلة من Phase 3) اتضافت لـ 4.4، و3 حقول `HrSettings` (`MonthBasis`/`DefaultCutoffDay`/`CompanyDefaultApproverUserId`) هتتفتح في شاشة `HR_SETTINGS` عن طريق 4.6 | `Phase-4-Research.md §2.1-§2.7`، كل القرارات دي اتاخدت صراحة بعد "موافق" المستخدم على الـ Research Pass |
+| 2026-09-28 | `EmployeeTaxProfile` اتسحب من الـ9 كيانات بتاعة Phase 5 لـ Phase 4.3، و`PayrollLine.SalaryComponentId` اتغيّر لـ Nullable مع enum جديد `PayrollLineSource` (`LegalSocialInsurance`/`LegalTax`/`LegalMartyrsFund`/`PriorPeriodAdjustment`/...) | اكتُشف أثناء تصميم محرك الحساب (4.4، قبل أي كود): قاعدة 37 ("الضريبة بتتحسب سنويًا وبتتقسّط شهريًا (`EmployeeTaxProfile` التراكمي)") و`PayrollRunType.AnnualTaxSettlement` (مبني فعليًا في 4.3) بيعتمدوا على تراكم سنوي حقيقي مش تقريب شهري، والقسائم المرحّلة بتتجمّد (قاعدة 29) فمفيش مجال لتصحيح لاحق. وبشكل منفصل، `SalaryComponent.CalculationMethod` (`Fixed`/`PercentOfBasic`/`Hourly`/`Formula`) مفيهوش حالة "من جدول قانوني"، فخصومات التأمينات/الضريبة/صندوق الشهداء مالهاش `SalaryComponent` حقيقي تتربط بيه — قرار المستخدم: `SalaryComponentId` Nullable بدل فرض Seeding لمكونات نظام وهمية |
 | — | — | — |

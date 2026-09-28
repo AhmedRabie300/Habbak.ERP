@@ -99,7 +99,6 @@ public class PayrollLineConfiguration : IEntityTypeConfiguration<PayrollLine>
         builder.ToTable("PayrollLines");
         builder.Property(l => l.Amount).HasPrecision(18, 4);
         builder.Property(l => l.Quantity).HasPrecision(9, 4);
-        builder.Property(l => l.SourceType).HasMaxLength(100);
 
         builder.HasOne(l => l.PayrollRun)
             .WithMany()
@@ -127,6 +126,21 @@ public class PayslipConfiguration : IEntityTypeConfiguration<Payslip>
         builder.HasOne(p => p.Employee).WithMany().HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(p => new { p.PayrollRunId, p.EmployeeId }).IsUnique().HasFilter("[IsDeleted] = 0");
+    }
+}
+
+public class EmployeeTaxProfileConfiguration : IEntityTypeConfiguration<EmployeeTaxProfile>
+{
+    public void Configure(EntityTypeBuilder<EmployeeTaxProfile> builder)
+    {
+        builder.ToTable("EmployeeTaxProfiles");
+        builder.Property(p => p.ExemptionReason).HasMaxLength(500);
+        builder.Property(p => p.YtdTaxableIncome).HasPrecision(18, 4);
+        builder.Property(p => p.YtdTaxWithheld).HasPrecision(18, 4);
+
+        builder.HasOne(p => p.Employee).WithMany().HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(p => new { p.EmployeeId, p.TaxYear }).IsUnique().HasFilter("[IsDeleted] = 0");
     }
 }
 

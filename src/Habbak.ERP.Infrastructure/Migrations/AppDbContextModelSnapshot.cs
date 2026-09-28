@@ -10345,6 +10345,76 @@ namespace Habbak.ERP.Infrastructure.Migrations
                     b.ToTable("EmployeeSalaries", (string)null);
                 });
 
+            modelBuilder.Entity("Habbak.ERP.Domain.Payroll.EmployeeTaxProfile", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("CompanyId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("DeletedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ExemptionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsExempt")
+                        .HasColumnType("bit");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("TaxYear")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("YtdTaxWithheld")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("YtdTaxableIncome")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("EmployeeId", "TaxYear")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("EmployeeTaxProfiles", (string)null);
+                });
+
             modelBuilder.Entity("Habbak.ERP.Domain.Payroll.EndOfServicePolicy", b =>
                 {
                     b.Property<long>("Id")
@@ -10839,15 +10909,14 @@ namespace Habbak.ERP.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<long>("SalaryComponentId")
+                    b.Property<long?>("SalaryComponentId")
                         .HasColumnType("bigint");
 
                     b.Property<long?>("SourceId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("SourceType")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<int>("SourceType")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -20894,6 +20963,34 @@ namespace Habbak.ERP.Infrastructure.Migrations
                     b.Navigation("SalaryComponent");
                 });
 
+            modelBuilder.Entity("Habbak.ERP.Domain.Payroll.EmployeeTaxProfile", b =>
+                {
+                    b.HasOne("Habbak.ERP.Domain.Settings.User", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Habbak.ERP.Domain.Settings.User", null)
+                        .WithMany()
+                        .HasForeignKey("DeletedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Habbak.ERP.Domain.HR.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Habbak.ERP.Domain.Settings.User", null)
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("Habbak.ERP.Domain.Payroll.EndOfServicePolicy", b =>
                 {
                     b.HasOne("Habbak.ERP.Domain.Settings.User", null)
@@ -21070,8 +21167,7 @@ namespace Habbak.ERP.Infrastructure.Migrations
                     b.HasOne("Habbak.ERP.Domain.Payroll.SalaryComponent", "SalaryComponent")
                         .WithMany()
                         .HasForeignKey("SalaryComponentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Habbak.ERP.Domain.Settings.User", null)
                         .WithMany()
