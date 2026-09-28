@@ -1,0 +1,33 @@
+namespace Habbak.ERP.Domain.Payroll;
+
+// Docs/Modules/10-Module-HR-Payroll.md §2.6 (canonical enum list) + §2.3. PayrollRunType/
+// PayrollRunStatus/SalaryComponentSource are copied here exactly as §2.6 defines them — this is
+// their first real implementation (Phase-4-Research.md §1.1: zero payroll domain code existed before
+// Sub-Batch 4.2/4.3).
+
+/// <summary>Mirrors HR.ContractLineType (Earning/Deduction) in shape, but deliberately a separate
+/// enum: a SalaryComponent is a reusable payroll-engine catalog entry, an EmploymentContractLine is a
+/// static per-contract amount (HR/EmploymentContractLine.cs, Phase-4-Research.md §2.3 — the two stay
+/// decoupled, no automatic conversion between them). Coupling the two enums would wire Domain.Payroll
+/// to Domain.HR for no reason beyond both being an earning/deduction dichotomy.</summary>
+public enum SalaryComponentType { Earning = 1, Deduction = 2 }
+
+public enum CalculationMethod { Fixed = 1, PercentOfBasic = 2, Hourly = 3, Formula = 4 }
+
+/// <summary>§2.3 — where the amount comes from when <c>IsRecurring = false</c>; recurring (Fixed)
+/// components come from EmployeeSalary instead. §2.8 of Phase-4-Research.md: FromCommissions is
+/// schema-ready only — no sales-rep/collected-invoice mechanism exists yet to compute it.</summary>
+public enum SalaryComponentSource { Fixed = 1, FromOvertime = 2, FromTips = 3, FromCommissions = 4, FromAdvances = 5, FromPenalties = 6 }
+
+public enum PayrollPeriodStatus { Open = 1, Locked = 2, Closed = 3 }
+
+public enum PayrollRunType { Regular = 1, Supplementary = 2, FinalSettlement = 3, AnnualTaxSettlement = 4 }
+
+public enum PayrollRunStatus { Draft = 1, Calculated = 2, PendingApproval = 3, Approved = 4, Posted = 5, Paid = 6, Reversed = 7, Rejected = 8 }
+
+/// <summary>§2.3/§4.7 — Included (line 128/327 of the module doc) is reached once the distribution's
+/// lines have been folded into a PayrollRun as PayrollLine rows; there is no Cancelled state in the
+/// documented lifecycle (§4.7), so none is added here.</summary>
+public enum TipsDistributionMethod { Equal = 1, ByDays = 2, ByHours = 3, ByPoints = 4 }
+
+public enum TipsDistributionStatus { Draft = 1, Pending = 2, Approved = 3, Included = 4, Rejected = 5 }

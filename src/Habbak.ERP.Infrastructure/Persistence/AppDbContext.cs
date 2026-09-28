@@ -256,6 +256,18 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<NoticePeriodRule> NoticePeriodRules => Set<NoticePeriodRule>();
     public DbSet<EndOfServicePolicy> EndOfServicePolicies => Set<EndOfServicePolicy>();
 
+    // Phase 4 — Payroll core (Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.3).
+    public DbSet<SalaryComponent> SalaryComponents => Set<SalaryComponent>();
+    public DbSet<SalaryStructure> SalaryStructures => Set<SalaryStructure>();
+    public DbSet<SalaryStructureLine> SalaryStructureLines => Set<SalaryStructureLine>();
+    public DbSet<EmployeeSalary> EmployeeSalaries => Set<EmployeeSalary>();
+    public DbSet<PayrollPeriod> PayrollPeriods => Set<PayrollPeriod>();
+    public DbSet<PayrollRun> PayrollRuns => Set<PayrollRun>();
+    public DbSet<PayrollLine> PayrollLines => Set<PayrollLine>();
+    public DbSet<Payslip> Payslips => Set<Payslip>();
+    public DbSet<TipsDistribution> TipsDistributions => Set<TipsDistribution>();
+    public DbSet<TipsDistributionLine> TipsDistributionLines => Set<TipsDistributionLine>();
+
     // System-wide (00-System-Wide-Corrections-01.md, sections 3-4) — not company-scoped.
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<FieldLabel> FieldLabels => Set<FieldLabel>();

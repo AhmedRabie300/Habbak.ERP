@@ -122,6 +122,18 @@ public interface IApplicationDbContext
     DbSet<NoticePeriodRule> NoticePeriodRules { get; }
     DbSet<EndOfServicePolicy> EndOfServicePolicies { get; }
 
+    // Phase 4 — Payroll core (Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.3).
+    DbSet<SalaryComponent> SalaryComponents { get; }
+    DbSet<SalaryStructure> SalaryStructures { get; }
+    DbSet<SalaryStructureLine> SalaryStructureLines { get; }
+    DbSet<EmployeeSalary> EmployeeSalaries { get; }
+    DbSet<PayrollPeriod> PayrollPeriods { get; }
+    DbSet<PayrollRun> PayrollRuns { get; }
+    DbSet<PayrollLine> PayrollLines { get; }
+    DbSet<Payslip> Payslips { get; }
+    DbSet<TipsDistribution> TipsDistributions { get; }
+    DbSet<TipsDistributionLine> TipsDistributionLines { get; }
+
     // System-wide (00-System-Wide-Corrections-01.md, sections 3-4)
     DbSet<MenuItem> MenuItems { get; }
     DbSet<FieldLabel> FieldLabels { get; }
