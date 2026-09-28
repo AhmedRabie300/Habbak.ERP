@@ -1,0 +1,41 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Node / React
+node_modules/
+dist/
+build/
+.vite/
+
+# App settings with real local secrets — see appsettings.Development.json.example
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/appsettings.*.local.json
+
+# Env files
+.env
+.env.*
+!.env.example
+# Contains no secret (just the local API base URL) and Vite needs it to run out of the box.
+!frontend/.env.development
+
+# Local databases / backups
+*.mdf
+*.ldf
+*.db
+DbBackups/
+
+# Certificates
+*.pfx
+*.p12
+*.pem
+
+# ASP.NET Core DataProtection keys (real key material, not portable across machines anyway)
+**/App_Data/DataProtection-Keys/
+
+# Runtime logs
+logs/
+**/logs/
