@@ -98,17 +98,44 @@ e1d6967 Phase 3C.5: contract line editor + attachment upload UI
 
 ---
 
-## 6. المطلوب من الـLocal Session (2B Workflow)
+## 6. Local Verification Results ✅ (2026-09-28)
 
-نفس الـWorkflow المعتمد من Phase 3B:
+الـLocal Session كمّلت التحقق الكامل بعد `git pull` (Commit `7ee1249`) — **Approved رسميًا**.
 
-1. `git pull` على فرع `main-wsqv76`.
-2. **Backup** قبل أي Migration (`HabbakErp_PrePhase3C.bak`).
-3. **Trial DB**: `dotnet ef database update` (Command Timeout=180) — تحقق من:
-   - جدول `EmploymentContractLines` (الأعمدة + الفهرس + الـFKs الثلاثة — العقد Cascade، Users Restrict).
-   - عمودي `AttachmentId` على `EmploymentContracts`/`EmployeeCertifications` + فهارسهم + FK على `Attachments` (Restrict).
-   - اختبار `Down()` ثم إعادة `Up()` (Round-trip).
-4. حذف Trial DB، تطبيق Migration على `HabbakErp` الحقيقية.
-5. **Full Regression**: `dotnet test` (كل المشاريع) + `npm run build`/`npm run test` (Frontend).
-6. تقرير `Phase-3C-Local-Verification.md` بنفس شكل تقرير Phase 3B.
-7. **STOP** بعد كده — انتظار القرار التالي من المستخدم.
+### 6.1 Migration Apply
+
+Backup (`HabbakErp_PrePhase3C.bak`) → Trial DB (`HabbakErp_Trial3C`، Migration `Up` + تحقق من الجدول/الأعمدة/الـFKs الثلاثة + `Down` كامل رجّع كل حاجة + `Up` تاني) → Real DB (`HabbakErp`). كل خطوة نجحت بدون مشاكل.
+
+### 6.2 نتائج الاختبارات
+
+| Suite | النتيجة |
+|---|---|
+| `EmploymentContract`/`EmployeeCertification`/`ContractLine` (فلتر مخصص، يشمل الـ7 الجديدة) | **22/22** ✅ |
+| HR Tests (`--filter "FullyQualifiedName~HR"`) | **96/96** ✅ (مطابق تمامًا لنتيجة الـCloud) |
+| IntegrationTests (كامل) | **245/245** ✅ (238 من Phase 3B + 7 اختبارات Phase 3C الجديدة) |
+| ApiTests (كامل) | **277/277** ✅ (بدون تغيير عن Phase 3B — مفيش API Tests جديدة لـPhase 3C) |
+| Frontend (`npm run build` + Vitest) | **9/9** ✅ |
+
+**الإجمالي: 627 تشغيلة اختبار، صفر Failures.**
+
+### 6.3 التحقق اليدوي من المتصفح (End-to-End)
+
+- **بنود العقد عن طريق Renew** (الموظف E1 كان عنده عقد فعال بالفعل، فـ"عقد جديد" رجّع `HR-CONTRACT-ALREADY-ACTIVE` كما هو متوقع — سلوك صحيح، مش Bug): تجديد العقد مع بندين ("بدل سكن"، "انتقالات") نجح، العقد القديم بقى "منتهي الصلاحية" والجديد "فعال"، والبنود اتخزّنت صح 100% (تأكيد مباشر عن طريق الـAPI، شامل الترميز العربي).
+- **مرفق على عقد موجود**: رفع (`POST /attachments`) → ربط (`PUT .../contracts/{id}/attachment`) → تنزيل (`GET /attachments/{id}/content`) — الثلاثة نجحوا End-to-End، والواجهة عكست الزرار الصحيح ("تصدير" بدل "رفع مرفق") بعد الربط.
+- **مرفق على شهادة موجودة**: نفس المسار، نجح End-to-End.
+- **Hiring Wizard مع بند عقد**: الويزارد الكامل (بيانات الموظف → شخصية → عقد ببند "بدل سكن" → مستندات → مستخدم) نجح من الأول للآخر، والبند اتخزّن صح.
+- **رسائل الخطأ اللي ظهرت أثناء الاختبار** (`HR-CONTRACT-ALREADY-ACTIVE`, `CODE-REQUIRED`) كانت Validation متعمَّدة وصحيحة، مش أعطال.
+
+### 6.4 تنظيف بعد الاختبار
+
+الموظف التجريبي (Id 4) اتمسح بالكامل. مرفقات الاختبار على الموظف الحقيقي E1 اتفكّت (`SetAttachment` بـ`null`) عن طريق الـEndpoint الرسمي. تجديد عقد E1 **اتسابت عمدًا** — نتيجة عملية Renewal حقيقية وصحيحة عن طريق الـUI الرسمي، مش بيانات اختبار وهمية (عكسها كان هيحتاج تلاعب مباشر بالـDB يتجاوز الـBusiness Rules، أخطر من إبقائها).
+
+### 6.5 Bugs مكتشفة
+
+**لا يوجد.** كل رسائل الخطأ كانت قواعد عمل صحيحة ومتعمَّدة.
+
+---
+
+## 7. القرار — Approved، الانتقال لـPhase 4
+
+**Phase 3C معتمدة رسميًا (Approved) — منجزة بالكامل (Cloud + Local).** لا يوجد أي Blocker لبدء Phase 4. الـCloud هيقف هنا وينتظر توجيه صريح من المستخدم قبل بدء أي كود جديد لـPhase 4.
