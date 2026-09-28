@@ -342,12 +342,16 @@ Sub-Batches:
   فمفيش طريقة تعبّر عن "خطوة إضافية بس لو تجاوز". البديل المطبَّق: `OvertimeRequest.ExceedsLimit` +
   `HrOverrideApprovedByUserId` — تشغيل الرواتب بيتجاهل أي طلب متجاوز من غير Override صريح من HR.
 
-**التكامل المحاسبي** (6 قوالب عن طريق `IPostingService`، مش 7 — قالب "صرف سلفة" أُجّل لـ Phase 5 مع
-كيان `EmployeeAdvance` نفسه؛ `CostCenterId` عن طريق Dimensions [`PostingGroupItem.Dimensions`] مش
-عمود مفرد، Phase-4-Research.md §1.2): استحقاق الرواتب، صرف الرواتب، مخصص الإجازات الشهري، مخصص نهاية
-الخدمة الشهري (بس لو `EndOfServicePolicy ≠ None`)، تسوية نهاية الخدمة (Schema-ready/غير مستخدَم لحد
-Phase 5 — نفس نمط `SourceDocumentType.Payroll` اللي قعد Schema-ready لمراحل قبل Phase 4)، توزيع
-البقشيش.
+**التكامل المحاسبي** (محدّث بعد 4.5، `IPostingTemplateEngine`، `CostCenterId` عن طريق Dimensions
+[`PostingGroupItem.Dimensions`] مش عمود مفرد، Phase-4-Research.md §1.2) — **قالبين حقيقيين فعليًا
+اتبنوا** على شاشة واحدة (`PAY_PAYROLL_RUNS`، حقل `Stage` بيفرّق بينهم): **استحقاق الرواتب** (وقت
+الاعتماد، بمركز تكلفة لكل موظف) و**صرف الرواتب** (وقت الصرف، `CompanyAccountRole.Cash` مباشرة —
+سند صرف، v1 حسب رقم 40). البقشيش (رقم 39) **جوه قيد الاستحقاق نفسه** (تسوية `TipsPayable`→`SalariesPayable`)،
+مش قالب مستقل — نص §6.2 نفسه: "داخل قيد الاستحقاق". **باقي القوالب الأربعة الأصلية اتأجّلت** (تفصيل
+في §7 Amendments Log): صرف سلفة (Phase 5 مع `EmployeeAdvance`)، تسوية نهاية الخدمة (Phase 5 مع
+`EmployeeEndOfService`)، ومخصص الإجازات الشهري ومخصص نهاية الخدمة الشهري (الاتنين محتاجين استعلام
+رصيد فعلي من دفتر الأستاذ — "قيد الفرق" — مش مبني في المشروع، وبناءه بشكل خاطئ (إضافة كامل المبلغ كل
+شهر بدل الفرق) هيطلّع رصيد التزام غلط في الميزانية بمرور الوقت — قرار مؤجّل عمدًا، مش نسيان).
 
 Sub-Batches:
 - **4.1** — Research Pass ✅ (`Phase-4-Research.md`، تأكيد 10 جداول قانونية حقيقية).
@@ -358,7 +362,8 @@ Sub-Batches:
   Phase 5] + enum **`PayrollLineSource`**).
 - **4.4** — Payroll Engine (المحرك + الـ Idempotency الثلاثي + مراجعة الاستثناءات + خطوة اعتماد
   الإضافي فوق الحد).
-- **4.5** — Posting Integration (11 دور جديد في `CompanyAccountRole` + 6 قوالب).
+- **4.5** ✅ — Posting Integration (11 دور جديد في `CompanyAccountRole` + قالبين حقيقيين
+  [استحقاق/صرف، Stage-gated] — التفاصيل والتأجيلات في §7 Amendments Log).
 - **4.6** — API (Controllers + تسجيل الشاشات + `FieldPermissionCatalog` + `HrSettings`: 3 حقول).
 - **4.7** — Frontend (شاشات الرواتب + خطوة "راتب" جديدة في `HR_HIRING` Wizard).
 - **4.8** — Tests + Docs.
@@ -486,11 +491,15 @@ User: "كمّل Phase X+1"
 عن طريق قاعدة 28)، `PayrollRunKeys`/Idempotency، `CreatePayrollPeriodCommand`/`CreatePayrollRunCommand`/
 `CalculatePayrollRunCommand`/`SubmitPayrollRunForApprovalCommand`، `PayrollRunApprovalOutcomeHandler`،
 جدول قانوني 12 جديد `OvertimeLimitRule` + `OvertimeRequest.ExceedsLimit`/`HrOverrideApprovedByUserId`
-(بديل عملي لخطوة اعتماد إضافية، قاعدة 20). Migrations اتولّدت ضد الـModel بس (Cloud، بدون Apply).
-تفاصيل كل Sub-Batch في §7 Amendments Log تحت.
+(بديل عملي لخطوة اعتماد إضافية، قاعدة 20) + **4.5 (Posting Integration)** منجز: 11 دور جديد في
+`CompanyAccountRole` (+ `ExpectedAccountType`)، `SourceDocumentType.TipsDistribution`، `PostPayrollRunCommand`/
+`PayPayrollRunCommand` (قالبين حقيقيين، Stage-gated على شاشة `PAY_PAYROLL_RUNS` واحدة) — البقشيش
+جوه قيد الاستحقاق، صرف سلفة/تسوية EOS/مخصص الإجازات الشهري/مخصص EOS الشهري كلهم مؤجّلين (تفصيل في
+Amendments Log). صفر Migration لـ4.5 (نمو Enum بس). Migrations اتولّدت ضد الـModel بس (Cloud، بدون
+Apply). تفاصيل كل Sub-Batch في §7 Amendments Log تحت.
 
 **قادمة (لسه محدش بدأ فيها)**:
-- باقي Phase 4 (4.5 → 4.8) ثم Phase 5 → Phase 7.
+- باقي Phase 4 (4.6 → 4.8) ثم Phase 5 → Phase 7.
 
 > ملاحظة دقة: القالب الأصلي لهذا الملف افترض إن Phase 1.2 "جارية" — ده مش صحيح فعليًا وقت كتابة هذا الملف، لسه محدش بدأ فيها. صُحّح هنا بدل ما يتكرر الافتراض.
 
@@ -517,4 +526,5 @@ User: "كمّل Phase X+1"
 | 2026-09-28 | Phase 4 Research Pass: عدد الجداول القانونية اتثبّت 10 (مش "9 أو 10")، `EndOfServicePolicy` أُضيف كجدول قانوني 11، `TipsDistribution`+`TipsDistributionLine` اتسحبوا لـ Phase 4 (مش Phase 5)، قالب "صرف سلفة" أُجّل لـ Phase 5 مع `EmployeeAdvance` نفسه (Phase 4 = 6 قوالب ترحيل مش 7)، خطوة اعتماد "الإضافي فوق الحد الشهري" (مؤجّلة من Phase 3) اتضافت لـ 4.4، و3 حقول `HrSettings` (`MonthBasis`/`DefaultCutoffDay`/`CompanyDefaultApproverUserId`) هتتفتح في شاشة `HR_SETTINGS` عن طريق 4.6 | `Phase-4-Research.md §2.1-§2.7`، كل القرارات دي اتاخدت صراحة بعد "موافق" المستخدم على الـ Research Pass |
 | 2026-09-28 | `EmployeeTaxProfile` اتسحب من الـ9 كيانات بتاعة Phase 5 لـ Phase 4.3، و`PayrollLine.SalaryComponentId` اتغيّر لـ Nullable مع enum جديد `PayrollLineSource` (`LegalSocialInsurance`/`LegalTax`/`LegalMartyrsFund`/`PriorPeriodAdjustment`/...) | اكتُشف أثناء تصميم محرك الحساب (4.4، قبل أي كود): قاعدة 37 ("الضريبة بتتحسب سنويًا وبتتقسّط شهريًا (`EmployeeTaxProfile` التراكمي)") و`PayrollRunType.AnnualTaxSettlement` (مبني فعليًا في 4.3) بيعتمدوا على تراكم سنوي حقيقي مش تقريب شهري، والقسائم المرحّلة بتتجمّد (قاعدة 29) فمفيش مجال لتصحيح لاحق. وبشكل منفصل، `SalaryComponent.CalculationMethod` (`Fixed`/`PercentOfBasic`/`Hourly`/`Formula`) مفيهوش حالة "من جدول قانوني"، فخصومات التأمينات/الضريبة/صندوق الشهداء مالهاش `SalaryComponent` حقيقي تتربط بيه — قرار المستخدم: `SalaryComponentId` Nullable بدل فرض Seeding لمكونات نظام وهمية |
 | 2026-09-28 | Phase 4.4 — جدول قانوني 12 جديد `OvertimeLimitRule` (مش معدود في §2.4 الأصلي، رقم 20 بيسمّيه "جدول مؤرّخ" بس بدون تفصيل) + `OvertimeRequest.ExceedsLimit`/`HrOverrideApprovedByUserId` بدل خطوة `ApprovalWorkflow` حقيقية تانية | `ApprovalWorkflowAssignment` (Phase 2) بيدعم سلسلة واحدة بس لكل Screen (فهرس فريد مفلتر)، فمفيش آلية جاهزة تعبّر عن "خطوة إضافية بس لو تجاوز حد" لنفس الشاشة — مُوثّق أصلًا كفجوة في Phase-4-Research.md §1.8. القرار: Override يدوي من HR بدل إعادة تصميم محرك الاعتمادات (ده كان هيوسّع نطاق 4.4 لتغيير جوهري في Phase 2 يأثر على شاشات تانية زي السلف/المكافآت) |
+| 2026-09-28 | Phase 4.5 — من قوالب §6.2 السبعة الأصلية (بعد استبعاد صرف السلفة، Phase 5)، **قالبين بس فعليًا اتبنوا** (استحقاق + صرف، Stage-gated على شاشة واحدة `PAY_PAYROLL_RUNS`)، والباقي اتأجّل: البقشيش بقى جوه قيد الاستحقاق نفسه (مش قالب مستقل — نص §6.2 صريح "داخل قيد الاستحقاق")؛ تسوية نهاية الخدمة اتأجّلت لـ Phase 5 مع `EmployeeEndOfService` (زي صرف السلفة بالظبط)؛ مخصص الإجازات الشهري ومخصص نهاية الخدمة الشهري (الاتنين) اتأجّلوا لأنهم محتاجين "إعادة قياس شهرية = قيد الفرق" (§6.2) وده محتاج استعلام رصيد فعلي من دفتر الأستاذ — بناءه غلط (إضافة كامل المبلغ كل شهر بدل الفرق) هيطلّع رصيد التزام مضاعَف في الميزانية شهريًا | مفيش قرار مستخدم صريح سابق على تأجيل مخصص الإجازات/EOS تحديدًا — قرار تنفيذي أثناء 4.5 نفسها لتجنّب بناء قيد محاسبي غلط بثقة، بدل ما يتوقف التنفيذ. Task منفصل اتسجّل (`task_eadb2c17`، "Build Leave/EOS monthly provision posting") لبناء استعلام رصيد دفتر الأستاذ اللازم قبل تفعيل القالبين دول |
 | — | — | — |

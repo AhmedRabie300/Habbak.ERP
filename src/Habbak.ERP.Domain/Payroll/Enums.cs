@@ -48,7 +48,15 @@ public enum PayrollLineSource
     /// <summary>EmploymentContract.BasicSalary itself — added in Sub-Batch 4.4 once the engine needed
     /// a source for it. Not "EmployeeSalary" because Basic isn't a SalaryComponent-tied row; carries
     /// no SalaryComponentId, same as the Legal* values.</summary>
-    Basic = 11
+    Basic = 11,
+
+    /// <summary>The employer's own social insurance share (§6.2's SocialInsuranceExpense — distinct
+    /// from LegalSocialInsurance, which is the employee's withheld share). Added in Sub-Batch 4.5 so
+    /// the posting command can aggregate it per employee/cost-center straight from PayrollLine, instead
+    /// of re-deriving cappedWage×EmployerRate a second time outside PayrollCalculationService. Never
+    /// counted in an employee's own Gross/Deductions/Net (it isn't part of their pay) — only in
+    /// PayrollRun.TotalEmployerCost and the accrual posting.</summary>
+    EmployerSocialInsurance = 12
 }
 
 /// <summary>§2.3/§4.7 — Included (line 128/327 of the module doc) is reached once the distribution's

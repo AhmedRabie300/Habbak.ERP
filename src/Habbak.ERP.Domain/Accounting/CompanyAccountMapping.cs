@@ -49,7 +49,20 @@ public enum CompanyAccountRole
     ServiceChargeRevenue = 15,
     TipsPayable = 16,
     PurchasePriceVariance = 17,
-    InventoryAdjustment = 18
+    InventoryAdjustment = 18,
+
+    // Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.5 — Docs/Modules/10-Module-HR-Payroll.md §6.2.
+    SalariesExpense = 19,
+    SalariesPayable = 20,
+    SocialInsuranceExpense = 21,
+    SocialInsurancePayable = 22,
+    PayrollTaxPayable = 23,
+    MartyrsFundPayable = 24,
+    LeaveExpense = 25,
+    LeaveProvision = 26,
+    EOSExpense = 27,
+    EOSProvision = 28,
+    HeirsPayable = 29
 }
 
 public static class CompanyAccountRoleExtensions
@@ -81,6 +94,17 @@ public static class CompanyAccountRoleExtensions
         CompanyAccountRole.TipsPayable => AccountType.Liability,
         CompanyAccountRole.PurchasePriceVariance => AccountType.Expense,
         CompanyAccountRole.InventoryAdjustment => AccountType.Expense,
+        CompanyAccountRole.SalariesExpense => AccountType.Expense,
+        CompanyAccountRole.SalariesPayable => AccountType.Liability,
+        CompanyAccountRole.SocialInsuranceExpense => AccountType.Expense,
+        CompanyAccountRole.SocialInsurancePayable => AccountType.Liability,
+        CompanyAccountRole.PayrollTaxPayable => AccountType.Liability,
+        CompanyAccountRole.MartyrsFundPayable => AccountType.Liability,
+        CompanyAccountRole.LeaveExpense => AccountType.Expense,
+        CompanyAccountRole.LeaveProvision => AccountType.Liability,
+        CompanyAccountRole.EOSExpense => AccountType.Expense,
+        CompanyAccountRole.EOSProvision => AccountType.Liability,
+        CompanyAccountRole.HeirsPayable => AccountType.Liability,
         _ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
     };
 }

@@ -182,6 +182,16 @@ public sealed class PayrollCalculationService(IApplicationDbContext db)
                 employerSocialInsuranceAmount = Math.Round(cappedWage * socialInsuranceRate.EmployerRate, 2);
                 employeeLines.Add(NewLine(run, employee, null, PayrollLineSource.LegalSocialInsurance, socialInsuranceRate.Id, socialInsuranceAmount,
                     new { cappedWage, socialInsuranceRate.EmployeeRate }, isEarning: false));
+
+                // Employer's own share — not part of this employee's Gross/Deductions/Net (added
+                // straight to `lines`, not `employeeLines`), kept only for PayrollRun.TotalEmployerCost
+                // and Sub-Batch 4.5's posting (SocialInsuranceExpense), which reads it back from here
+                // instead of recomputing cappedWage×EmployerRate a second time.
+                if (employerSocialInsuranceAmount > 0)
+                {
+                    lines.Add(NewLine(run, employee, null, PayrollLineSource.EmployerSocialInsurance, socialInsuranceRate.Id, employerSocialInsuranceAmount,
+                        new { cappedWage, socialInsuranceRate.EmployerRate }, isEarning: false).Line);
+                }
             }
 
             // Tax (rule 37) — annualize-and-divide withholding against EmployeeTaxProfile's YTD totals.

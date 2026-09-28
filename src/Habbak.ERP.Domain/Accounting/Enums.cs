@@ -56,7 +56,14 @@ public enum SourceDocumentType
     // Fixed assets and maintenance (08-Module-Maintenance-FixedAssets). Depreciation (6) already existed.
     FixedAssetAcquisition = 18,
     AssetDisposal = 19,
-    MaintenanceRequest = 20
+    MaintenanceRequest = 20,
+
+    /// <summary>Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.5 — Payroll (5) already
+    /// covers the accrual/payment entries; this is specifically for the tips reclassification
+    /// (TipsPayable → SalariesPayable) folded into the same accrual entry (§6.2: "داخل قيد الاستحقاق").
+    /// EmployeeAdvance/EndOfService stay unadded — both need their own Phase 5 entity first
+    /// (Phase-4-Research.md §2.5, HR-MASTER-PLAN.md §Phase 4 scope note on "EOS Settlement").</summary>
+    TipsDistribution = 21
 }
 
 public enum VoucherType

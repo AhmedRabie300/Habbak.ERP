@@ -81,8 +81,20 @@ public static class PostingScreenCatalog
     public const string MaintenanceExternalCost = "MAINTENANCE_REQUESTS";
     public const string MaintenanceSpareParts = "MAINTENANCE_SPARE_PARTS";
 
+    // Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.5. One screen, two Stage-gated
+    // templates (Accrual/Payment) — genuinely two separate events in PayrollRun's lifecycle
+    // (Approved→Posted, Posted→Paid), not one call that should fire both.
+    public const string PayrollRun = "PAY_PAYROLL_RUNS";
+
     public const string DepreciationExpenseGroup = "DepreciationExpense";
     public const string AccumulatedDepreciationGroup = "AccumulatedDepreciation";
+
+    public const string SalariesExpenseGroup = "SalariesExpense";
+    public const string SocialInsuranceExpenseGroup = "SocialInsuranceExpense";
+    public const string SalariesPayableGroup = "SalariesPayable";
+    public const string SocialInsurancePayableGroup = "SocialInsurancePayable";
+    public const string PayrollTaxPayableGroup = "PayrollTaxPayable";
+    public const string MartyrsFundPayableGroup = "MartyrsFundPayable";
 
     // Codes match the screen-settings (coding rules) codes wherever the screen has one, so the
     // posting section sits on the same screen as its numbering. Shift variance, drawer expenses and
@@ -509,6 +521,50 @@ public static class PostingScreenCatalog
                 StockTemplate("صيانة — قطع غيار", "Maintenance — spare parts",
                     FromField(1, Dr, "MaintenanceExpenseAccountId", "StockPartsCost"),
                     Role(2, Cr, CompanyAccountRole.Inventory, "StockPartsCost"))
+            ]),
+
+        // Docs/Modules/10-Module-HR-Payroll.md §6.2. Two templates, gated by the "Stage" field
+        // (Accrual/Payment) since they post at two different points of PayrollRun's lifecycle, not
+        // together. Tips (rule 39) fold into the Accrual entry as a flat TipsPayable→SalariesPayable
+        // reclassification ("داخل قيد الاستحقاق" — the module doc's own words, not a third template).
+        // Leave/EOS Provision (the other two of the module doc's original 7 templates) and Advance
+        // Disbursement/EOS Settlement are deliberately NOT here — see Phase-4-Research.md/HR-MASTER-PLAN.md
+        // §Phase 4 Amendments Log for why each is deferred.
+        new(PayrollRun, "تشغيل الرواتب", "Payroll run", SourceModule.Payroll,
+            "قيدين منفصلين لكل تشغيل: استحقاق (وقت الاعتماد) وصرف (وقت الدفع) — كل سطر استحقاق بمركز تكلفة الموظف.",
+            CanMoveStock: false,
+            [
+                new("Stage", "المرحلة", "Stage", PostingFieldKind.Text, Choices: ["Accrual", "Payment"]),
+                Amount("TipsPayableAmount", "بقشيش مُدرَج في هذا التشغيل (تسوية من TipsPayable)", "Tips folded into this run", 0m),
+                Amount("TotalNet", "صافي الرواتب (وقت الصرف)", "Total net (at payment)", 50000m)
+            ],
+            [
+                new(SalariesExpenseGroup, "صافي الأجر المستحق لكل موظف (مركز تكلفته)", "Net earned wage per employee", 45000m),
+                new(SocialInsuranceExpenseGroup, "حصة الشركة في التأمينات لكل موظف", "Employer's social insurance share per employee", 5000m),
+                new(SalariesPayableGroup, "المستحق فعليًا للموظف بعد كل الخصومات", "Actually owed to the employee after deductions", 38000m),
+                new(SocialInsurancePayableGroup, "إجمالي التأمينات المستحقة (الحصتين) لكل موظف", "Total social insurance due (both shares) per employee", 5000m),
+                new(PayrollTaxPayableGroup, "الضريبة المستقطعة المستحقة لكل موظف", "Withheld tax due per employee", 2000m),
+                new(MartyrsFundPayableGroup, "صندوق الشهداء المستحق لكل موظف", "Martyrs fund due per employee", 200m)
+            ],
+            [
+                new("استحقاق الرواتب", "Payroll accrual", DefaultNote,
+                    [
+                        Group(1, Dr, SalariesExpenseGroup),
+                        Group(2, Dr, SocialInsuranceExpenseGroup),
+                        Role(3, Dr, CompanyAccountRole.TipsPayable, "TipsPayableAmount", optional: true),
+                        Group(4, Cr, SalariesPayableGroup),
+                        Group(5, Cr, SocialInsurancePayableGroup),
+                        Group(6, Cr, PayrollTaxPayableGroup),
+                        Group(7, Cr, MartyrsFundPayableGroup),
+                        Role(8, Cr, CompanyAccountRole.SalariesPayable, "TipsPayableAmount", optional: true)
+                    ],
+                    PostingTriggerType.FieldCondition, "Stage", "Accrual"),
+                new("صرف الرواتب", "Payroll payment", DefaultNote,
+                    [
+                        Role(1, Dr, CompanyAccountRole.SalariesPayable, "TotalNet"),
+                        Role(2, Cr, CompanyAccountRole.Cash, "TotalNet")
+                    ],
+                    PostingTriggerType.FieldCondition, "Stage", "Payment")
             ])
     ];
 }
