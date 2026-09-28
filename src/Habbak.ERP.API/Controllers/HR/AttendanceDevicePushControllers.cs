@@ -1,3 +1,4 @@
+using Habbak.ERP.API.Auth;
 using Habbak.ERP.Application.Attendance.AttendanceDevices.Commands;
 using Habbak.ERP.Application.Common.Interfaces;
 using Habbak.ERP.Domain.Attendance;
@@ -41,6 +42,7 @@ internal static class DevicePushAuthenticator
 /// </summary>
 [ApiController]
 [AllowAnonymous]
+[AnySignedInUser]
 [Route("iclock")]
 public class IClockPushController(ISender mediator, IApplicationDbContext db, IPasswordHasher passwordHasher) : ControllerBase
 {
@@ -112,6 +114,7 @@ public class IClockPushController(ISender mediator, IApplicationDbContext db, IP
 /// </summary>
 [ApiController]
 [AllowAnonymous]
+[AnySignedInUser]
 [Route("api/v1/hr/attendance-devices/push-json")]
 public class AttendanceDevicePushJsonController(ISender mediator, IApplicationDbContext db, IPasswordHasher passwordHasher) : ControllerBase
 {
