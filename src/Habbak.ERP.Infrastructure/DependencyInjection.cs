@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IStockMovementService, StockMovementService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddHostedService<MaintenanceHostedService>();
+        services.AddHostedService<AttendanceDeviceProcessingHostedService>();
 
         // Supplier resolves for real now that Purchasing owns that mapping; Customer/Employee still
         // fail clearly pending Sales/HR (see CounterpartyAccountResolver's own XML doc).

@@ -35,7 +35,9 @@ public class AccountingApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
             {
                 ["ConnectionStrings:Default"] = ConnectionString,
                 // The daily maintenance job has nothing to do in a test host.
-                ["Maintenance:Enabled"] = "false"
+                ["Maintenance:Enabled"] = "false",
+                // Same reasoning — the attendance-device background job has no devices to poll here.
+                ["AttendanceDeviceJob:Enabled"] = "false"
             });
         });
 

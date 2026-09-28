@@ -27,7 +27,12 @@ public sealed class RealJwtApiFactory : WebApplicationFactory<Program>, IAsyncLi
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
         builder.ConfigureAppConfiguration((_, config) =>
-            config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Default"] = ConnectionString, ["Maintenance:Enabled"] = "false" }));
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:Default"] = ConnectionString,
+                ["Maintenance:Enabled"] = "false",
+                ["AttendanceDeviceJob:Enabled"] = "false"
+            }));
 
     public AppDbContext CreateDirectDbContext() =>
         new(new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(ConnectionString).Options);
