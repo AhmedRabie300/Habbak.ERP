@@ -496,10 +496,24 @@ User: "كمّل Phase X+1"
 `PayPayrollRunCommand` (قالبين حقيقيين، Stage-gated على شاشة `PAY_PAYROLL_RUNS` واحدة) — البقشيش
 جوه قيد الاستحقاق، صرف سلفة/تسوية EOS/مخصص الإجازات الشهري/مخصص EOS الشهري كلهم مؤجّلين (تفصيل في
 Amendments Log). صفر Migration لـ4.5 (نمو Enum بس). Migrations اتولّدت ضد الـModel بس (Cloud، بدون
-Apply). تفاصيل كل Sub-Batch في §7 Amendments Log تحت.
+Apply). **4.6 (API) منجز**: 8 Controllers (`SalaryComponentsController`, `SalaryStructuresController`,
+`EmployeeSalaryController`, `PayrollPeriodsController`, `PayrollRunsController` [+Calculate/Submit/
+Post/Pay/Reverse]، `PayslipsController`, `TipsDistributionController`, `LegalTablesController` [تبويب
+لكل جدول قانوني، 11 Create/Update Endpoint زوج])؛ طبقة Application كاملة اتبنت أول مرة في 4.6 نفسها
+لكل الكيانات اللي كانت Domain-only من 4.2/4.3 (`LegalTableCommands`/`LegalTableQueries`/
+`LegalTableRules`، `SalaryComponentCommands`، `SalaryStructureCommands`، `EmployeeSalaryCommands`،
+`TipsDistributionCommands`، `PayslipQueries`، `PayrollRunCommands` امتدت بـ`GetPayrollRunByIdQuery`)؛
+تسجيل الشاشات (`ScreenSeedData`: `HR_SALARY_CHANGES` + 4 شاشات PAY جديدة، `MenuItemSeedData`: مجموعة
+"Payroll" جديدة في القائمة)؛ `FieldPermissionCatalog` حقول أجر حساسة (`HR_SALARY_CHANGES`،
+`PAY_PAYROLL_RUNS`، `PAY_PAYSLIPS`، `PAY_LEGAL_TABLES`)؛ `HrSettings` +3 حقول (`MonthBasis`،
+`DefaultCutoffDay`، `CompanyDefaultApproverUserId`)؛ `ICodeGenerator` لـ`PayrollRun.RunNumber`
+(بادئة "PYR"، تلقائي) — `Payslip` مالهوش كود منفصل (مربوط بالـ`PayrollRun` أصلًا، مفيش شاشة Create
+مستقلة تحتاج ترقيم). **Audit Log**: مفيش كود مخصص اتضاف — `AppDbContext.CaptureAuditAsync` بيسجل
+كل Add/Modify تلقائيًا على أي `IAuditableEntity` (تفصيل في §7 Amendments Log). Migration واحد جديد
+(`Phase4PayrollRunNumber`، عمود+Index بس). تفاصيل كل Sub-Batch في §7 Amendments Log تحت.
 
 **قادمة (لسه محدش بدأ فيها)**:
-- باقي Phase 4 (4.6 → 4.8) ثم Phase 5 → Phase 7.
+- باقي Phase 4 (4.7 → 4.8) ثم Phase 5 → Phase 7.
 
 > ملاحظة دقة: القالب الأصلي لهذا الملف افترض إن Phase 1.2 "جارية" — ده مش صحيح فعليًا وقت كتابة هذا الملف، لسه محدش بدأ فيها. صُحّح هنا بدل ما يتكرر الافتراض.
 
@@ -527,4 +541,5 @@ Apply). تفاصيل كل Sub-Batch في §7 Amendments Log تحت.
 | 2026-09-28 | `EmployeeTaxProfile` اتسحب من الـ9 كيانات بتاعة Phase 5 لـ Phase 4.3، و`PayrollLine.SalaryComponentId` اتغيّر لـ Nullable مع enum جديد `PayrollLineSource` (`LegalSocialInsurance`/`LegalTax`/`LegalMartyrsFund`/`PriorPeriodAdjustment`/...) | اكتُشف أثناء تصميم محرك الحساب (4.4، قبل أي كود): قاعدة 37 ("الضريبة بتتحسب سنويًا وبتتقسّط شهريًا (`EmployeeTaxProfile` التراكمي)") و`PayrollRunType.AnnualTaxSettlement` (مبني فعليًا في 4.3) بيعتمدوا على تراكم سنوي حقيقي مش تقريب شهري، والقسائم المرحّلة بتتجمّد (قاعدة 29) فمفيش مجال لتصحيح لاحق. وبشكل منفصل، `SalaryComponent.CalculationMethod` (`Fixed`/`PercentOfBasic`/`Hourly`/`Formula`) مفيهوش حالة "من جدول قانوني"، فخصومات التأمينات/الضريبة/صندوق الشهداء مالهاش `SalaryComponent` حقيقي تتربط بيه — قرار المستخدم: `SalaryComponentId` Nullable بدل فرض Seeding لمكونات نظام وهمية |
 | 2026-09-28 | Phase 4.4 — جدول قانوني 12 جديد `OvertimeLimitRule` (مش معدود في §2.4 الأصلي، رقم 20 بيسمّيه "جدول مؤرّخ" بس بدون تفصيل) + `OvertimeRequest.ExceedsLimit`/`HrOverrideApprovedByUserId` بدل خطوة `ApprovalWorkflow` حقيقية تانية | `ApprovalWorkflowAssignment` (Phase 2) بيدعم سلسلة واحدة بس لكل Screen (فهرس فريد مفلتر)، فمفيش آلية جاهزة تعبّر عن "خطوة إضافية بس لو تجاوز حد" لنفس الشاشة — مُوثّق أصلًا كفجوة في Phase-4-Research.md §1.8. القرار: Override يدوي من HR بدل إعادة تصميم محرك الاعتمادات (ده كان هيوسّع نطاق 4.4 لتغيير جوهري في Phase 2 يأثر على شاشات تانية زي السلف/المكافآت) |
 | 2026-09-28 | Phase 4.5 — من قوالب §6.2 السبعة الأصلية (بعد استبعاد صرف السلفة، Phase 5)، **قالبين بس فعليًا اتبنوا** (استحقاق + صرف، Stage-gated على شاشة واحدة `PAY_PAYROLL_RUNS`)، والباقي اتأجّل: البقشيش بقى جوه قيد الاستحقاق نفسه (مش قالب مستقل — نص §6.2 صريح "داخل قيد الاستحقاق")؛ تسوية نهاية الخدمة اتأجّلت لـ Phase 5 مع `EmployeeEndOfService` (زي صرف السلفة بالظبط)؛ مخصص الإجازات الشهري ومخصص نهاية الخدمة الشهري (الاتنين) اتأجّلوا لأنهم محتاجين "إعادة قياس شهرية = قيد الفرق" (§6.2) وده محتاج استعلام رصيد فعلي من دفتر الأستاذ — بناءه غلط (إضافة كامل المبلغ كل شهر بدل الفرق) هيطلّع رصيد التزام مضاعَف في الميزانية شهريًا | مفيش قرار مستخدم صريح سابق على تأجيل مخصص الإجازات/EOS تحديدًا — قرار تنفيذي أثناء 4.5 نفسها لتجنّب بناء قيد محاسبي غلط بثقة، بدل ما يتوقف التنفيذ. Task منفصل اتسجّل (`task_eadb2c17`، "Build Leave/EOS monthly provision posting") لبناء استعلام رصيد دفتر الأستاذ اللازم قبل تفعيل القالبين دول |
+| 2026-09-28 | Phase 4.6 — طلب المستخدم وصف `HR_SALARY_CHANGES` بـ"موجود مسبقًا"، لكن الفحص الفعلي أكّد إنها مش مسجّلة في `ScreenSeedData`/`MenuItemSeedData` قبل كده — اتسجّلت الآن في 4.6 نفسها زي باقي شاشات PAY. وبشكل منفصل: طلب المستخدم "Audit Log لكل عمليات PayrollRun (Post/Pay/Reverse)" اتحقق منه فطلع مش محتاج كود جديد خالص — `AppDbContext.CaptureAuditAsync` بيسجل تلقائيًا كل Add/Modify/Delete على أي `IAuditableEntity` (ومنها `PayrollRun`) مع Diff على مستوى الحقل، والحقول الحساسة (`FieldPermissionCatalog`) بتترَدَّاكت تلقائيًا — الآلية دي عامة وسابقة على Phase 4 بالكامل | الفحص عن طريق `grep` على `HR_SALARY_CHANGES` في `ScreenSeedData.cs`/`MenuItemSeedData.cs` قبل أي تعديل (قاعدة الملف §2: "افحص الكود الفعلي قبل أي افتراض معماري")؛ ومراجعة `AppDbContext.SaveChangesAsync`/`CaptureAuditAsync` (مختلف عن `AuditSaveChangesInterceptor` اللي بيقتصر على Created/UpdatedBy) أكّدت التغطية التلقائية بدون أي Custom Audit Code |
 | — | — | — |

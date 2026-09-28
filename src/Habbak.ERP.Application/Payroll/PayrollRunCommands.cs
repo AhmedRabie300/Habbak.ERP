@@ -17,7 +17,7 @@ namespace Habbak.ERP.Application.Payroll;
 // posting template).
 
 public sealed record PayrollRunDto(
-    long Id, long PayrollPeriodId, PayrollRunType RunType, PayrollRunStatus Status, int EmployeeCount,
+    long Id, string RunNumber, long PayrollPeriodId, PayrollRunType RunType, PayrollRunStatus Status, int EmployeeCount,
     decimal TotalGross, decimal TotalDeductions, decimal TotalNet, decimal TotalEmployerCost);
 
 internal static class PayrollRunKeys
@@ -29,7 +29,7 @@ internal static class PayrollRunKeys
         new(SHA256.HashData(Encoding.UTF8.GetBytes($"{companyId}:PayrollRun:{year:D4}-{month:D2}:{runType}:{referenceId}")).AsSpan(0, 16));
 
     public static PayrollRunDto Map(PayrollRun r) =>
-        new(r.Id, r.PayrollPeriodId, r.RunType, r.Status, r.EmployeeCount, r.TotalGross, r.TotalDeductions, r.TotalNet, r.TotalEmployerCost);
+        new(r.Id, r.RunNumber, r.PayrollPeriodId, r.RunType, r.Status, r.EmployeeCount, r.TotalGross, r.TotalDeductions, r.TotalNet, r.TotalEmployerCost);
 }
 
 public sealed record GetPayrollRunsQuery : IRequest<IReadOnlyList<PayrollRunDto>>;
@@ -38,6 +38,29 @@ public sealed class GetPayrollRunsQueryHandler(IApplicationDbContext db) : IRequ
 {
     public async Task<IReadOnlyList<PayrollRunDto>> Handle(GetPayrollRunsQuery request, CancellationToken cancellationToken) =>
         (await db.PayrollRuns.AsNoTracking().OrderByDescending(r => r.Id).ToListAsync(cancellationToken)).Select(PayrollRunKeys.Map).ToList();
+}
+
+public sealed record PayrollLineDto(
+    long Id, long EmployeeId, long? SalaryComponentId, decimal Amount, decimal? Quantity, PayrollLineSource SourceType, long? SourceId);
+
+public sealed record PayrollRunDetailDto(PayrollRunDto Run, IReadOnlyList<PayrollLineDto> Lines);
+
+public sealed record GetPayrollRunByIdQuery(long Id) : IRequest<PayrollRunDetailDto>;
+
+public sealed class GetPayrollRunByIdQueryHandler(IApplicationDbContext db) : IRequestHandler<GetPayrollRunByIdQuery, PayrollRunDetailDto>
+{
+    public async Task<PayrollRunDetailDto> Handle(GetPayrollRunByIdQuery request, CancellationToken cancellationToken)
+    {
+        var run = await db.PayrollRuns.AsNoTracking().FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken)
+            ?? throw new NotFoundException(nameof(PayrollRun), request.Id);
+
+        var lines = await db.PayrollLines.AsNoTracking().Where(l => l.PayrollRunId == run.Id)
+            .OrderBy(l => l.EmployeeId)
+            .Select(l => new PayrollLineDto(l.Id, l.EmployeeId, l.SalaryComponentId, l.Amount, l.Quantity, l.SourceType, l.SourceId))
+            .ToListAsync(cancellationToken);
+
+        return new PayrollRunDetailDto(PayrollRunKeys.Map(run), lines);
+    }
 }
 
 /// <summary>What creating a run answers: the run, and whether it already existed (rule 30) — same
@@ -55,7 +78,7 @@ public sealed class CreatePayrollRunCommandValidator : AbstractValidator<CreateP
     }
 }
 
-public sealed class CreatePayrollRunCommandHandler(IApplicationDbContext db, ICurrentCompanyContext current)
+public sealed class CreatePayrollRunCommandHandler(IApplicationDbContext db, ICurrentCompanyContext current, ICodeGenerator codes)
     : IRequestHandler<CreatePayrollRunCommand, PayrollRunResult>
 {
     public async Task<PayrollRunResult> Handle(CreatePayrollRunCommand request, CancellationToken cancellationToken)
@@ -72,6 +95,7 @@ public sealed class CreatePayrollRunCommandHandler(IApplicationDbContext db, ICu
         var run = new PayrollRun
         {
             CompanyId = current.CompanyId,
+            RunNumber = await codes.ResolveCodeAsync("PAY_PAYROLL_RUNS", null, cancellationToken),
             PayrollPeriodId = period.Id,
             RunType = request.RunType,
             IdempotencyKey = key,

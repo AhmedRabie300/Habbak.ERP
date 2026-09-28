@@ -414,6 +414,17 @@ public class OvertimeRequestsController(ISender mediator) : ControllerBase
         await mediator.Send(new CancelOvertimeRequestCommand(id), cancellationToken);
         return NoContent();
     }
+
+    /// <summary>Sub-Batch 4.6 — HR-only override for a request OvertimeLimitRule flagged
+    /// (OvertimeRequest.ExceedsLimit), the practical stand-in for a second approval step
+    /// (Phase-4-Research.md §1.8, HR-MASTER-PLAN.md §Phase 4 Amendments Log 2026-09-28).</summary>
+    [HttpPost("{id:long}/approve-over-limit")]
+    [ScreenAction(ScreenAction.Approve)]
+    public async Task<IActionResult> ApproveOverLimit(long id, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new ApproveOvertimeOverLimitCommand(id), cancellationToken);
+        return NoContent();
+    }
 }
 
 /// <summary>Remarks8 Item 7 — شاشة منفصلة (HR_SHIFT_SCHEDULE_GENERATOR) عن HR_SHIFT_SCHEDULES،

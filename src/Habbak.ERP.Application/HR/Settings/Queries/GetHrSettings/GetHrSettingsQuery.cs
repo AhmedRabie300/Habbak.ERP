@@ -25,7 +25,10 @@ public sealed class GetHrSettingsQueryHandler(IApplicationDbContext db, ICurrent
             DefaultProbationDays = settings.DefaultProbationDays,
             DefaultBranchId = settings.DefaultBranchId,
             RequireNationalIdForActivation = settings.RequireNationalIdForActivation,
-            LeaveDayCountingMode = settings.LeaveDayCountingMode
+            LeaveDayCountingMode = settings.LeaveDayCountingMode,
+            MonthBasis = settings.MonthBasis,
+            DefaultCutoffDay = settings.DefaultCutoffDay,
+            CompanyDefaultApproverUserId = settings.CompanyDefaultApproverUserId
         };
     }
 }

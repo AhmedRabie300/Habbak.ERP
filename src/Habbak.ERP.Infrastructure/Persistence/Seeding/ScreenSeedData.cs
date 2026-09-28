@@ -38,6 +38,16 @@ public static class ScreenSeedData
         ("HR_EMPLOYEE_DEVICE_MAPPINGS", "ربط الموظفين بأجهزة البصمة", "Employee Device Mappings", "HR"),
         ("HR_ATTENDANCE_DEVICE_LOGS", "سجل مزامنة أجهزة البصمة", "Attendance Device Sync Log", "HR"),
         ("HR_ATTENDANCE_RECONCILIATION", "تسوية بصمات الأجهزة", "Attendance Reconciliation", "HR"),
+
+        // Payroll (Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.6) — كيانات غير
+        // مُرقَّمة (مفيش عمود Code)، فمش موجودة في ScreenCodeCatalog زي PAY_SALARY_COMPONENTS/
+        // PAY_PAYROLL_RUNS. HR_SALARY_CHANGES مسجّل تحت وحدة HR (§5.1 صف 14 يحط "تعديلات الرواتب"
+        // جوه HR)، الباقي تحت PAY.
+        ("HR_SALARY_CHANGES", "تعديلات الرواتب", "Salary Changes", "HR"),
+        ("PAY_PERIODS", "فترات الرواتب", "Payroll Periods", "PAY"),
+        ("PAY_PAYSLIPS", "قسائم الرواتب", "Payslips", "PAY"),
+        ("PAY_TIPS_DISTRIBUTION", "توزيع البقشيش", "Tips Distribution", "PAY"),
+        ("PAY_LEGAL_TABLES", "الجداول القانونية", "Legal Tables", "PAY"),
     ];
 
     public static List<Screen> Build()

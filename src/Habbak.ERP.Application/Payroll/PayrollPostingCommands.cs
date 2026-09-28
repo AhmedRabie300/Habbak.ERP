@@ -71,6 +71,31 @@ public sealed class PostPayrollRunCommandHandler(IApplicationDbContext db, ICurr
 
         run.JournalEntryId = result?.Id;
         run.Status = PayrollRunStatus.Posted;
+
+        // Rule 38 — the frozen payslip only becomes visible in self-service once Posted; generated
+        // here (once, guarded by the Approved-only status check above) rather than at Calculate time,
+        // so a pre-approval recompute (Draft/Calculated loop, Sub-Batch 4.4) never has to reconcile a
+        // stale Payslip against regenerated PayrollLines.
+        var issuedAt = DateTime.UtcNow;
+        // EmployerSocialInsurance is excluded — it's the employer's own cost (PayrollRun.TotalEmployerCost),
+        // never part of the employee's own Gross/Deductions/Net (PayrollCalculationService's own rule).
+        var employeeOwnLines = lines.Where(l => l.SourceType != PayrollLineSource.EmployerSocialInsurance);
+        foreach (var group in employeeOwnLines.GroupBy(l => l.EmployeeId))
+        {
+            var gross = group.Where(PayrollLineClassifier.IsEarning).Sum(l => l.Amount);
+            var deductions = group.Where(l => !PayrollLineClassifier.IsEarning(l)).Sum(l => l.Amount);
+            db.Payslips.Add(new Payslip
+            {
+                CompanyId = run.CompanyId,
+                PayrollRunId = run.Id,
+                EmployeeId = group.Key,
+                Gross = gross,
+                TotalDeductions = deductions,
+                Net = gross - deductions,
+                IssuedAtUtc = issuedAt
+            });
+        }
+
         await db.SaveChangesAsync(cancellationToken);
     }
 
@@ -240,6 +265,62 @@ public sealed class PayPayrollRunCommandHandler(IApplicationDbContext db, ICurre
             }
         }
 
+        await db.SaveChangesAsync(cancellationToken);
+    }
+}
+
+/// <summary>Posted or Paid → Reversed (§4.3: "قيد عكسي بصلاحية عالية، ويتاح بعده تشغيل جديد بنفس المفتاح"
+/// — Reversed is excluded from the IdempotencyKey's unique filter, Sub-Batch 4.4). Reverses both
+/// journal entries when the run had reached Paid, reopens the PayrollPeriod for a Regular run (undoing
+/// PayPayrollRunCommand's Close), and removes the Payslips — they were never valid to begin with once
+/// the run itself is undone, and rule 38 only ever showed them because the run was Posted.</summary>
+public sealed record ReversePayrollRunCommand(long PayrollRunId, string Reason) : IRequest;
+
+public sealed class ReversePayrollRunCommandValidator : AbstractValidator<ReversePayrollRunCommand>
+{
+    public ReversePayrollRunCommandValidator()
+    {
+        RuleFor(x => x.PayrollRunId).GreaterThan(0);
+        RuleFor(x => x.Reason).NotEmpty().MaximumLength(500);
+    }
+}
+
+public sealed class ReversePayrollRunCommandHandler(IApplicationDbContext db, IPostingTemplateEngine posting)
+    : IRequestHandler<ReversePayrollRunCommand>
+{
+    public async Task Handle(ReversePayrollRunCommand request, CancellationToken cancellationToken)
+    {
+        var run = await db.PayrollRuns.FirstOrDefaultAsync(r => r.Id == request.PayrollRunId, cancellationToken)
+            ?? throw new NotFoundException(nameof(PayrollRun), request.PayrollRunId);
+
+        if (run.Status is not (PayrollRunStatus.Posted or PayrollRunStatus.Paid))
+        {
+            throw new BusinessRuleException("PAY-RUN-NOT-REVERSIBLE", "التشغيل لازم يكون مترحّل أو مصروف قبل الإلغاء.");
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        if (run.PaymentJournalEntryId is { } paymentEntryId)
+        {
+            await posting.ReverseAsync(paymentEntryId, today, $"إلغاء صرف رواتب {run.RunNumber}: {request.Reason}", cancellationToken);
+        }
+        if (run.JournalEntryId is { } accrualEntryId)
+        {
+            await posting.ReverseAsync(accrualEntryId, today, $"إلغاء استحقاق رواتب {run.RunNumber}: {request.Reason}", cancellationToken);
+        }
+
+        var payslips = await db.Payslips.Where(p => p.PayrollRunId == run.Id).ToListAsync(cancellationToken);
+        db.Payslips.RemoveRange(payslips);
+
+        if (run.RunType == PayrollRunType.Regular)
+        {
+            var period = await db.PayrollPeriods.FirstOrDefaultAsync(p => p.Id == run.PayrollPeriodId, cancellationToken);
+            if (period is not null)
+            {
+                period.Status = PayrollPeriodStatus.Open;
+            }
+        }
+
+        run.Status = PayrollRunStatus.Reversed;
         await db.SaveChangesAsync(cancellationToken);
     }
 }

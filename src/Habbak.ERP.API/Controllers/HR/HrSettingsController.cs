@@ -16,7 +16,9 @@ namespace Habbak.ERP.API.Controllers.HR;
 [Route("api/v1/hr/settings")]
 public class HrSettingsController(ISender mediator) : ControllerBase
 {
-    public sealed record UpdateHrSettingsRequest(int DefaultProbationDays, long? DefaultBranchId, bool RequireNationalIdForActivation, LeaveDayCountingMode LeaveDayCountingMode);
+    public sealed record UpdateHrSettingsRequest(
+        int DefaultProbationDays, long? DefaultBranchId, bool RequireNationalIdForActivation, LeaveDayCountingMode LeaveDayCountingMode,
+        HrMonthBasis? MonthBasis, int? DefaultCutoffDay, long? CompanyDefaultApproverUserId);
 
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken cancellationToken) =>
@@ -30,7 +32,10 @@ public class HrSettingsController(ISender mediator) : ControllerBase
             DefaultProbationDays = request.DefaultProbationDays,
             DefaultBranchId = request.DefaultBranchId,
             RequireNationalIdForActivation = request.RequireNationalIdForActivation,
-            LeaveDayCountingMode = request.LeaveDayCountingMode
+            LeaveDayCountingMode = request.LeaveDayCountingMode,
+            MonthBasis = request.MonthBasis,
+            DefaultCutoffDay = request.DefaultCutoffDay,
+            CompanyDefaultApproverUserId = request.CompanyDefaultApproverUserId
         }, cancellationToken);
 
         return NoContent();

@@ -110,6 +110,11 @@ public class PayrollRun : AuditableEntity, ICompanyScopedEntity
     public long PayrollPeriodId { get; set; }
     public PayrollPeriod PayrollPeriod { get; set; } = null!;
 
+    /// <summary>Sub-Batch 4.6 — via ICodeGenerator.ResolveCodeAsync("PAY_PAYROLL_RUNS", ...), same
+    /// pattern as DepreciationRun.RunNumber. Manual code input makes no sense for a run (its identity
+    /// is the period/type/reference, not something a user names), so it's always auto-generated.</summary>
+    public string RunNumber { get; set; } = null!;
+
     public PayrollRunType RunType { get; set; }
     public Guid IdempotencyKey { get; set; }
     public long? ReferenceId { get; set; }

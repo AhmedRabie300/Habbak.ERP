@@ -79,12 +79,22 @@ public static class MenuItemSeedData
             IsActive = true
         };
 
+        var payrollGroup = new MenuItem
+        {
+            Code = "PAYROLL",
+            NameAr = "الرواتب",
+            NameEn = "Payroll",
+            DisplayOrder = 8,
+            RouteKey = null,
+            IsActive = true
+        };
+
         var settingsGroup = new MenuItem
         {
             Code = "SETTINGS",
             NameAr = "الإعدادات",
             NameEn = "Settings",
-            DisplayOrder = 8,
+            DisplayOrder = 9,
             RouteKey = null,
             IsActive = true
         };
@@ -251,6 +261,17 @@ public static class MenuItemSeedData
             Leaf(hrGroup, "HR_EMPLOYEE_DEVICE_MAPPINGS", "ربط الموظفين بالأجهزة", "Employee Device Mappings", 21, "/hr/employee-device-mappings"),
             Leaf(hrGroup, "HR_ATTENDANCE_DEVICE_LOGS", "سجل مزامنة الأجهزة", "Device Sync Log", 22, "/hr/attendance-device-logs"),
             Leaf(hrGroup, "HR_ATTENDANCE_RECONCILIATION", "تسوية بصمات الأجهزة", "Attendance Reconciliation", 23, "/hr/attendance-reconciliation"),
+            // Payroll (Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.6, §5.1 row 14).
+            Leaf(hrGroup, "HR_SALARY_CHANGES", "تعديلات الرواتب", "Salary Changes", 24, "/hr/salary-changes"),
+
+            payrollGroup,
+            Leaf(payrollGroup, "PAY_SALARY_COMPONENTS", "بنود الرواتب", "Salary Components", 1, "/payroll/salary-components"),
+            Leaf(payrollGroup, "PAY_SALARY_STRUCTURES", "هياكل الرواتب", "Salary Structures", 2, "/payroll/salary-structures"),
+            Leaf(payrollGroup, "PAY_PERIODS", "فترات الرواتب", "Payroll Periods", 3, "/payroll/periods"),
+            Leaf(payrollGroup, "PAY_PAYROLL_RUNS", "تشغيلات الرواتب", "Payroll Runs", 4, "/payroll/runs"),
+            Leaf(payrollGroup, "PAY_PAYSLIPS", "قسائم الرواتب", "Payslips", 5, "/payroll/payslips"),
+            Leaf(payrollGroup, "PAY_TIPS_DISTRIBUTION", "توزيع البقشيش", "Tips Distribution", 6, "/payroll/tips-distribution"),
+            Leaf(payrollGroup, "PAY_LEGAL_TABLES", "الجداول القانونية", "Legal Tables", 7, "/payroll/legal-tables"),
 
             settingsGroup,
             Leaf(settingsGroup, "SETTINGS_CODING_RULES", "إعدادات الشاشات", "Screen Settings", 1, "/settings/coding-rules"),

@@ -43,6 +43,13 @@ public static class FieldPermissionCatalog
         "PhoneNumber", "PersonalEmail", "EmergencyContactName", "EmergencyContactPhone"
     ];
 
+    // Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.6 — rule 6 covers "PII أو أجر",
+    // not just PII; these are wage/compensation figures, not personal data, so — same as
+    // ContactAndCredit above — none of them are [PiiField] (that attribute is reserved for genuinely
+    // personal fields; the catalog itself doesn't require it, PiiFieldRegistrationTests.cs only
+    // checks the attribute→catalog direction, not the reverse).
+    private static readonly string[] LegalTableValues = ["Amount", "EmployeeRate", "EmployerRate", "MinWage", "MaxWage", "PersonalExemption", "Rate", "MaxDaysPerMonth"];
+
     public static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string[]>> SensitiveFields =
         new Dictionary<string, IReadOnlyDictionary<string, string[]>>
         {
@@ -57,7 +64,26 @@ public static class FieldPermissionCatalog
             ["POS_SHIFTS"] = new Dictionary<string, string[]> { ["Shift"] = ["ExpectedClosingCashAmount"] },
             ["POS_TABLE_BOARD"] = new Dictionary<string, string[]> { ["POSPayment"] = ["CardTransactionReference"] },
             ["POS_RETURNS"] = new Dictionary<string, string[]> { ["POSPayment"] = ["CardTransactionReference"] },
-            ["HR_EMPLOYEES"] = new Dictionary<string, string[]> { ["EmployeePersonalData"] = EmployeePersonalDataPii }
+            ["HR_EMPLOYEES"] = new Dictionary<string, string[]> { ["EmployeePersonalData"] = EmployeePersonalDataPii },
+
+            // Payroll wage fields (rule 6: "أي حقل PII أو أجر").
+            ["HR_SALARY_CHANGES"] = new Dictionary<string, string[]> { ["EmployeeSalary"] = ["Amount"] },
+            ["PAY_PAYROLL_RUNS"] = new Dictionary<string, string[]>
+            {
+                ["PayrollLine"] = ["Amount"],
+                ["PayrollRun"] = ["TotalGross", "TotalDeductions", "TotalNet", "TotalEmployerCost"]
+            },
+            ["PAY_PAYSLIPS"] = new Dictionary<string, string[]> { ["Payslip"] = ["Gross", "TotalDeductions", "Net"] },
+            ["PAY_LEGAL_TABLES"] = new Dictionary<string, string[]>
+            {
+                ["MinimumWage"] = LegalTableValues,
+                ["SocialInsuranceRate"] = LegalTableValues,
+                ["InsurableWageLimit"] = LegalTableValues,
+                ["PayrollTaxBracketSet"] = LegalTableValues,
+                ["PayrollTaxBracket"] = LegalTableValues,
+                ["MartyrsFundRate"] = LegalTableValues,
+                ["PenaltyDeductionCap"] = LegalTableValues
+            }
         };
 
     /// <summary>Sensitive on any screen — decides audit-log redaction.</summary>

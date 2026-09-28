@@ -79,12 +79,15 @@ public class PayrollRunConfiguration : IEntityTypeConfiguration<PayrollRun>
     public void Configure(EntityTypeBuilder<PayrollRun> builder)
     {
         builder.ToTable("PayrollRuns");
+        builder.Property(r => r.RunNumber).IsRequired().HasMaxLength(50);
         builder.Property(r => r.TotalGross).HasPrecision(18, 4);
         builder.Property(r => r.TotalDeductions).HasPrecision(18, 4);
         builder.Property(r => r.TotalNet).HasPrecision(18, 4);
         builder.Property(r => r.TotalEmployerCost).HasPrecision(18, 4);
 
         builder.HasOne(r => r.PayrollPeriod).WithMany().HasForeignKey(r => r.PayrollPeriodId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(r => new { r.CompanyId, r.RunNumber }).IsUnique().HasFilter("[IsDeleted] = 0");
 
         // Rule 30 (Docs/Modules/10-Module-HR-Payroll.md) — a Reversed/Rejected run frees its key for a
         // new attempt; PayrollRunStatus.Reversed = 7, Rejected = 8 (Domain/Payroll/Enums.cs).

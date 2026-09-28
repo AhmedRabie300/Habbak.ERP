@@ -100,7 +100,14 @@ public static class ScreenCodeCatalog
         new("HR_HOLIDAYS", "العطلات", "Holidays", false, CodeFormat.LettersAndNumbers, null, 5),
 
         // Fingerprint devices (Docs/Implementation/Phase-3B-Research.md §Phase 3B) — Lookup زي باقي أجهزة/معدات النظام.
-        new("HR_ATTENDANCE_DEVICES", "أجهزة البصمة", "Attendance Devices", false, CodeFormat.LettersAndNumbers, null, 5)
+        new("HR_ATTENDANCE_DEVICES", "أجهزة البصمة", "Attendance Devices", false, CodeFormat.LettersAndNumbers, null, 5),
+
+        // Payroll (Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.6). SalaryComponent/
+        // SalaryStructure — Lookups زي باقي الكيانات المرجعية، يدوي افتراضيًا. PayrollRun — تلقائي
+        // بالكامل (RunNumber مالوش معنى إدخال يدوي، هويّة التشغيل من الفترة/النوع مش من اسم يختاره حد).
+        new("PAY_SALARY_COMPONENTS", "بنود الرواتب", "Salary Components", false, CodeFormat.LettersAndNumbers, null, 5),
+        new("PAY_SALARY_STRUCTURES", "هياكل الرواتب", "Salary Structures", false, CodeFormat.LettersAndNumbers, null, 5),
+        new("PAY_PAYROLL_RUNS", "تشغيلات الرواتب", "Payroll Runs", true, CodeFormat.LettersAndNumbers, "PYR", 5)
     ];
 
     public static ScreenCodeDefinition? Find(string screenCode) => All.FirstOrDefault(s => s.ScreenCode == screenCode);
