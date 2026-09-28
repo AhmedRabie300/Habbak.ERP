@@ -437,3 +437,31 @@ API يرجّع حقول `*AtUtc` من غير `Z` (UTC Marker) → الـ Fronten
 ### الأولوية
 
 🟡 — يتحل قبل Phase 6 (ESS).
+
+---
+
+## 🟡 لسه مفتوحة — مفيش Endpoint لحذف Attachment
+
+**التاريخ**: 2026-09-28 (اتسجّل أثناء Local Verification لـ Phase 3C)
+**المكان**: `src/Habbak.ERP.API/Controllers/Common/AttachmentsController.cs` (أو المكافئ) — الآلية العامة للمرفقات
+**الخطورة**: 🟡 متوسطة — صفوف يتيمة بس، صفر تأثير وظيفي أو أمني.
+
+### الوصف
+
+الآلية العامة للمرفقات (`POST /attachments` للرفع، `GET /attachments/{id}/content` للتنزيل) مفيهاش أي `DELETE /attachments/{id}`. لما شاشة تفك ارتباط مرفق موجود بسجل (مثلًا `SetEmploymentContractAttachmentCommand`/`SetEmployeeCertificationAttachmentCommand` من Phase 3C بقيمة `AttachmentId = null`)، صف `Attachment` نفسه (والملف المخزَّن جوه `Content` بصيغة `varbinary(max)`) **بيفضل موجود في الجدول كصف يتيم (Orphaned)** — مفيش أي كيان تاني بيشاور عليه، ومفيش طريقة نظيفة لحذفه غير SQL مباشر.
+
+### إزاي اتكشفت
+
+أثناء التحقق اليدوي لـ Phase 3C (رفع/فك ارتباط مرفقات تجريبية على عقد وشهادة حقيقيين لموظف E1) — بعد فك الارتباط عن طريق `SetAttachment(..., null)`، صفوف `Attachments` الأصلية اتسابت عمدًا في الجدول (Orphaned) لأنه مفيش Endpoint رسمي لحذفها، وحذفها بـ SQL مباشر كان هيحتاج معرفة كل تبعياتها بدون ضمان — أخطر من إبقائها كصفوف يتيمة غير مؤذية.
+
+### التأثير الفعلي
+
+صفر تأثير وظيفي أو أمني — الصفوف اليتيمة مش مربوطة بأي سجل، ومش بتظهر لأي مستخدم. التأثير الوحيد هو تراكم بيانات غير مستخدَمة (Storage) بمرور الوقت مع أي استخدام متكرر لميزات "استبدال مرفق" (زي `AttachmentCell.tsx` الجديدة في Phase 3C) أو حذف سجلات بتاعة مرفقات.
+
+### الحل المطلوب (Follow-up — لسه ماتعملش)
+
+`DELETE /attachments/{id}` Endpoint جديد — يحتاج قرار تصميم: حذف فعلي فوري، أو فحص عدم وجود أي مرجع (Scalar FK زي `EmploymentContract.AttachmentId` أو Polymorphic `EntityType`/`EntityId`) قبل السماح بالحذف، لتفادي كسر أي سجل لسه بيستخدم المرفق.
+
+### الأولوية
+
+🟡 — يتحل في Phase 6 (ESS) أو Phase 7، مش عاجل.

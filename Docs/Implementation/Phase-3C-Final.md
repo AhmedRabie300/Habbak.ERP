@@ -102,21 +102,31 @@ e1d6967 Phase 3C.5: contract line editor + attachment upload UI
 
 الـLocal Session كمّلت التحقق الكامل بعد `git pull` (Commit `7ee1249`) — **Approved رسميًا**.
 
+### 6.0 ملخص سريع
+
+- **Pull**: HEAD = `7ee1249` ✅ (مطابق لـ`origin/main-wsqv76`).
+- **Build**: Backend ✅ + Frontend ✅ (صفر Error/Warning جديد).
+- **Migration**: Backup → Trial (Up + Down + Re-apply) → Real ✅ (تفاصيل §6.1).
+- **Tests**: HR 96/96، IntegrationTests 245/245، ApiTests 277/277، Frontend 9/9 (تفاصيل §6.2).
+- **Manual**: 4/4 ✅ (تفاصيل §6.3).
+- **القرار**: **Approved**.
+
 ### 6.1 Migration Apply
 
 Backup (`HabbakErp_PrePhase3C.bak`) → Trial DB (`HabbakErp_Trial3C`، Migration `Up` + تحقق من الجدول/الأعمدة/الـFKs الثلاثة + `Down` كامل رجّع كل حاجة + `Up` تاني) → Real DB (`HabbakErp`). كل خطوة نجحت بدون مشاكل.
 
-### 6.2 نتائج الاختبارات
+### 6.2 نتائج الاختبارات — Cloud مقابل Local
 
-| Suite | النتيجة |
-|---|---|
-| `EmploymentContract`/`EmployeeCertification`/`ContractLine` (فلتر مخصص، يشمل الـ7 الجديدة) | **22/22** ✅ |
-| HR Tests (`--filter "FullyQualifiedName~HR"`) | **96/96** ✅ (مطابق تمامًا لنتيجة الـCloud) |
-| IntegrationTests (كامل) | **245/245** ✅ (238 من Phase 3B + 7 اختبارات Phase 3C الجديدة) |
-| ApiTests (كامل) | **277/277** ✅ (بدون تغيير عن Phase 3B — مفيش API Tests جديدة لـPhase 3C) |
-| Frontend (`npm run build` + Vitest) | **9/9** ✅ |
+| Suite | Cloud | Local |
+|---|---|---|
+| HR Tests (`--filter "FullyQualifiedName~HR"`) | 96/96 | **96/96** ✅ |
+| IntegrationTests (كامل) | 238 (Phase 3B) + 7 اختبارات Phase 3C جديدة (منفصلة) | **245/245** ✅ |
+| ApiTests (كامل) | 277 (بدون تغيير عن Phase 3B) | **277/277** ✅ |
+| Frontend (`npm run build` + Vitest) | لم تُشغّل هنا (فقط `tsc`/`build`) | **9/9** ✅ |
+| `EmploymentContract`/`EmployeeCertification`/`ContractLine` (فلتر مخصص) | 7/7 (الاختبارات الجديدة بس) | **22/22** ✅ (يشمل اختبارات قديمة مطابقة) |
+| Manual Verification (4 بنود Remarks8) | لم يُجرَ (بيئة Cloud بلا متصفح حقيقي ضد Real DB) | **4/4** ✅ |
 
-**الإجمالي: 627 تشغيلة اختبار، صفر Failures.**
+**الإجمالي (Local): 627 تشغيلة اختبار (96+245+277+9)، صفر Failures.**
 
 ### 6.3 التحقق اليدوي من المتصفح (End-to-End)
 
