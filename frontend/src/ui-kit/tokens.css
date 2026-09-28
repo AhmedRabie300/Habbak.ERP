@@ -1,0 +1,189 @@
+/* Design Tokens (00-Frontend-Specs.md, section 3.2).
+   Default theme: "إسبريسو" (Espresso) — sourced from Coffee_ERP_Full_System_Mockup.html
+   (espresso/rust/olive palette), chosen as the system's default color theme. الحبّاك's
+   original navy/gold (sampled from Images/Logo.jpeg) remains selectable as [data-theme='habbak']. */
+:root {
+  --color-navy-900: #16253a;
+  --color-navy-700: #213a56;
+  --color-navy-500: #2f4d6e;
+  --color-gold-500: #c69a2e;
+  --color-gold-600: #9c7a1e;
+
+  --color-bg: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef1f4;
+  --color-border: #e2e5eb;
+  --color-text: #1a1f2b;
+  --color-text-muted: #6b7280;
+
+  --color-success: #2e5c4f;
+  --color-error: #7e2c21;
+  --color-warning: #8a6414;
+  --color-info-bg: #e7f0ec;
+  --color-info-fg: #3f7d6b;
+  --color-success-bg: #e6f2ee;
+  --color-warning-bg: #fbf0dc;
+  --color-error-bg: #f7e4de;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --radius: 8px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+  --radius-chip: 12px;
+  --shadow-1: 0 1px 3px rgba(22, 37, 58, 0.08);
+  --shadow-2: 0 8px 24px rgba(22, 37, 58, 0.14);
+  --shadow-lg: 0 14px 40px rgba(22, 37, 58, 0.18);
+  --shadow-brand: 0 8px 20px rgba(22, 37, 58, 0.28);
+
+  /* Brand gradient + focus ring — controls-language sourced from the NozomSoft reference
+     project's design system (buttons/cards/badges/modals/toolbar), applied here on whichever
+     color theme is active. */
+  --color-primary-gradient: linear-gradient(135deg, var(--color-navy-700) 0%, var(--color-navy-500) 100%);
+  --color-sidebar-gradient: linear-gradient(170deg, var(--color-navy-900) 0%, var(--color-navy-700) 100%);
+  --color-accent: var(--color-gold-500);
+  --color-accent-dark: var(--color-gold-600);
+  --color-ring: rgba(22, 37, 58, 0.16);
+
+  --font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+
+/* الحبّاك — الهوية الأصلية (نفس ألوان اللوجو)، متاحة كخيار من مبدّل الألوان. */
+[data-theme='habbak'] {
+  --color-navy-900: #16283f;
+  --color-navy-700: #1c3454;
+  --color-navy-500: #2c4a70;
+  --color-gold-500: #c9a13c;
+  --color-gold-600: #ab8730;
+  --color-bg: #f7f8fa;
+  --color-surface-2: #eef1f5;
+  --color-success: #1e8e5a;
+  --color-error: #c0392b;
+  --color-warning: #b3872f;
+  --color-info-bg: #e8eefb;
+  --color-info-fg: var(--color-navy-500);
+  --color-success-bg: #e5f6ee;
+  --color-warning-bg: #fbf1de;
+  --color-error-bg: #fbe9e7;
+  --shadow-brand: 0 8px 20px rgba(28, 52, 84, 0.28);
+  --color-primary-gradient: linear-gradient(135deg, var(--color-navy-700) 0%, var(--color-navy-500) 100%);
+  --color-sidebar-gradient: linear-gradient(170deg, var(--color-navy-900) 0%, var(--color-navy-700) 100%);
+  --color-ring: rgba(28, 52, 84, 0.16);
+}
+
+/* NozomSoft — تركواز/سماوي + برتقالي (مطابق للمشروع المرجعي). */
+[data-theme='nozomsoft'] {
+  --color-navy-900: #0e7490;
+  --color-navy-700: #0891b2;
+  --color-navy-500: #0891b2;
+  --color-gold-500: #f97316;
+  --color-gold-600: #ea580c;
+  --color-bg: #f3f9fb;
+  --color-surface-2: #e6f4f8;
+  --color-success: #10b981;
+  --color-error: #e11d48;
+  --color-warning: #f59e0b;
+  --color-info-bg: #cffafe;
+  --color-info-fg: #0e7490;
+  --color-success-bg: #d1fae5;
+  --color-warning-bg: #fef3c7;
+  --color-error-bg: #ffe4e6;
+  --shadow-brand: 0 8px 20px rgba(8, 145, 178, 0.28);
+  --color-primary-gradient: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+  --color-sidebar-gradient: linear-gradient(170deg, #0e7490 0%, #0891b2 100%);
+  --color-ring: rgba(8, 145, 178, 0.16);
+}
+
+/* سماوي — مبني على اللون المطلوب #B3E5FC. */
+[data-theme='sky'] {
+  --color-navy-900: #01579b;
+  --color-navy-700: #0277bd;
+  --color-navy-500: #0288d1;
+  --color-gold-500: #fb8c00;
+  --color-gold-600: #ef6c00;
+  --color-bg: #eaf6fd;
+  --color-surface-2: #e3f2fb;
+  --color-success: #2e7d32;
+  --color-error: #c62828;
+  --color-warning: #f9a825;
+  --color-info-bg: #e1f5fe;
+  --color-info-fg: #0277bd;
+  --color-success-bg: #e6f4ea;
+  --color-warning-bg: #fdf1d6;
+  --color-error-bg: #fbe4e2;
+  --shadow-brand: 0 8px 20px rgba(2, 119, 189, 0.28);
+  --color-primary-gradient: linear-gradient(135deg, #01579b 0%, #0288d1 100%);
+  --color-sidebar-gradient: linear-gradient(170deg, #01579b 0%, #0277bd 100%);
+  --color-ring: rgba(2, 119, 189, 0.16);
+}
+
+/* سيدج — مبني على اللون المطلوب #D0DCD6. */
+[data-theme='sage'] {
+  --color-navy-900: #24352e;
+  --color-navy-700: #3b5a4e;
+  --color-navy-500: #527c6c;
+  --color-gold-500: #c08552;
+  --color-gold-600: #9c6a3c;
+  --color-bg: #f1f4f2;
+  --color-surface-2: #e9eeec;
+  --color-success: #2e7d32;
+  --color-error: #a94442;
+  --color-warning: #b8860b;
+  --color-info-bg: #eaf1ee;
+  --color-info-fg: #3b5a4e;
+  --color-success-bg: #e6f2ee;
+  --color-warning-bg: #f6ecd8;
+  --color-error-bg: #f3e2df;
+  --shadow-brand: 0 8px 20px rgba(36, 53, 46, 0.28);
+  --color-primary-gradient: linear-gradient(135deg, #24352e 0%, #3b5a4e 100%);
+  --color-sidebar-gradient: linear-gradient(170deg, #24352e 0%, #3b5a4e 100%);
+  --color-ring: rgba(59, 90, 78, 0.16);
+}
+
+/* Windows Blue — مبني على اللون المطلوب #0078D7 (Fluent Design). */
+[data-theme='windows'] {
+  --color-navy-900: #004e8c;
+  --color-navy-700: #0078d7;
+  --color-navy-500: #2b88d8;
+  --color-gold-500: #ffb900;
+  --color-gold-600: #d29200;
+  --color-bg: #f3f9fd;
+  --color-surface-2: #e8f2fb;
+  --color-success: #107c10;
+  --color-error: #d13438;
+  --color-warning: #986f0b;
+  --color-info-bg: #e5f2fc;
+  --color-info-fg: #0078d7;
+  --color-success-bg: #dff6dd;
+  --color-warning-bg: #fdf0d5;
+  --color-error-bg: #fde7e9;
+  --shadow-brand: 0 8px 20px rgba(0, 120, 215, 0.28);
+  --color-primary-gradient: linear-gradient(135deg, #004e8c 0%, #0078d7 100%);
+  --color-sidebar-gradient: linear-gradient(170deg, #004e8c 0%, #0078d7 100%);
+  --color-ring: rgba(0, 120, 215, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+table {
+  border-collapse: collapse;
+}
+
+@keyframes habbak-skeleton {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}

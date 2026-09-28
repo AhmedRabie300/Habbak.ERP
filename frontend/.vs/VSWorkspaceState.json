@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\features",
+    "\\src\\features\\common",
+    "\\src\\features\\dev",
+    "\\src\\features\\navigation",
+    "\\src\\features\\organization",
+    "\\src\\features\\organization\\branches",
+    "\\src\\features\\settings",
+    "\\src\\features\\settings\\codingRules"
+  ],
+  "SelectedNode": "\\src\\features\\organization\\branches\\api.ts",
+  "PreviewInSolutionExplorer": false
+}

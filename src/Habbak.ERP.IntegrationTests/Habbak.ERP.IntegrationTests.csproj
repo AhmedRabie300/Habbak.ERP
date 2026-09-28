@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.12" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageReference Include="Xunit.SkippableFact" Version="1.5.85" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Batch B7 — same cap as Habbak.ERP.ApiTests/xunit.runner.json, applied here too since this
+         suite's tests also each spin up their own LocalDB database. -->
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Habbak.ERP.Infrastructure\Habbak.ERP.Infrastructure.csproj" />
+    <ProjectReference Include="..\Habbak.ERP.Application\Habbak.ERP.Application.csproj" />
+    <ProjectReference Include="..\Habbak.ERP.Domain\Habbak.ERP.Domain.csproj" />
+    <ProjectReference Include="..\Habbak.ERP.Shared\Habbak.ERP.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

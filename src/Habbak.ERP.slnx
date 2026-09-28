@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="Habbak.ERP.API/Habbak.ERP.API.csproj" />
+  <Project Path="Habbak.ERP.ApiTests/Habbak.ERP.ApiTests.csproj" />
+  <Project Path="Habbak.ERP.Application/Habbak.ERP.Application.csproj" />
+  <Project Path="Habbak.ERP.Domain/Habbak.ERP.Domain.csproj" />
+  <Project Path="Habbak.ERP.Infrastructure/Habbak.ERP.Infrastructure.csproj" />
+  <Project Path="Habbak.ERP.IntegrationTests/Habbak.ERP.IntegrationTests.csproj" />
+  <Project Path="Habbak.ERP.Shared/Habbak.ERP.Shared.csproj" />
+</Solution>

@@ -1,0 +1,86 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "dev",
+        "--",
+        "--host"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "src/Habbak.ERP.API",
+        "--no-launch-profile",
+        "--urls",
+        "http://localhost:5299"
+      ],
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "port": 5299
+    },
+    {
+      "name": "api-side",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "src/Habbak.ERP.API",
+        "--no-launch-profile",
+        "--urls",
+        "http://localhost:5300",
+        "--artifacts-path",
+        "C:/Users/Ahmed/AppData/Local/Temp/claude/D--Projects-ALHabbak/7201a0a8-4141-498b-825c-24102f4a95e9/scratchpad/artifacts"
+      ],
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "port": 5300
+    },
+    {
+      "name": "frontend-side",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "vite",
+        "--config",
+        "C:/Users/Ahmed/AppData/Local/Temp/claude/D--Projects-ALHabbak/7201a0a8-4141-498b-825c-24102f4a95e9/scratchpad/vite.posting-preview.config.mjs"
+      ],
+      "env": {
+        "VITE_API_BASE_URL": "/api/v1"
+      },
+      "port": 5175
+    },
+    {
+      "name": "api-side-localdb",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "src/Habbak.ERP.API",
+        "--no-launch-profile",
+        "--urls",
+        "http://localhost:5300",
+        "--artifacts-path",
+        "C:/Users/Ahmed/AppData/Local/Temp/claude/D--Projects-ALHabbak/7201a0a8-4141-498b-825c-24102f4a95e9/scratchpad/artifacts"
+      ],
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__Default": "Server=(localdb)\\mssqllocaldb;Database=HabbakErp;Trusted_Connection=True;TrustServerCertificate=True;"
+      },
+      "port": 5300
+    }
+  ]
+}

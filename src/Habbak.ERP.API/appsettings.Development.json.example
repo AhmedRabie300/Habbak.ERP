@@ -1,0 +1,48 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft.AspNetCore": "Warning",
+        "Microsoft.EntityFrameworkCore": "Warning"
+      }
+    },
+    "WriteTo": [
+      { "Name": "Console" },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/habbak-erp-.txt",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 30
+        }
+      }
+    ],
+    "Enrich": [ "FromLogContext" ]
+  },
+  "Vault": {
+    "_comment": "Dev mode only — run `vault server -dev -dev-root-token-id=dev-root-token` locally first (Docs/Setup/Vault-Setup.md). Both DataProtection and HmacPiiHasher require this to be reachable while it's set here.",
+    "Address": "http://localhost:8200",
+    "Token": "YOUR_VAULT_DEV_TOKEN_HERE",
+    "MountPath": "secret",
+    "PiiHmacPath": "habbak/pii/hmac-key",
+    "DataProtectionKeysPath": "habbak/dataprotection-keys",
+    "SkipTlsVerify": true
+  },
+  "ConnectionStrings": {
+    "_comment": "This is the app's own runtime connection — deliberately NOT given a longer Command Timeout here (a slow query should still fail fast in a running app, not hang for minutes). `dotnet ef database update` against a brand-new empty database needs a longer one instead, passed explicitly on that one command: `--connection \"...;Command Timeout=180;\"` — SettingsPermissionsPhase3's dynamic-SQL cleanup step takes ~35s once the schema has 100+ tables, past the 30s ADO.NET default (Docs/Reports-UPDATED/Known-Issues.md).",
+    "Default": "YOUR_CONNECTION_STRING_HERE"
+  },
+  "Jwt": {
+    "_comment": "Dev-only signing key — never a real secret, never used in staging/production (00-Project-Overview.md, section 23). Real issuance/rotation belongs to the not-yet-built login endpoint.",
+    "Issuer": "Habbak.ERP.Dev",
+    "Audience": "Habbak.ERP.Dev",
+    "Key": "YOUR_DEV_JWT_SIGNING_KEY_HERE"
+  }
+}
