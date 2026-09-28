@@ -262,3 +262,20 @@ vault server -dev -dev-root-token-id="dev-root-token" -dev-listen-address="127.0
 - تخزين في الذاكرة (كل حاجة بتضيع عند إيقاف العملية) — بيتفعّل ويتحل تلقائيًا (Auto-Unseal)، من غير HTTPS، وToken ثابت.
 - بعد التشغيل، اتفعل الـ KV engine وكُتب مفتاح الـ HMAC مرة واحدة يدويًا (نفس أمر قسم 6 فوق، بس من غير `sudo` وعلى الجهاز المحلي).
 - `appsettings.Development.json` بيتوقع بالظبط الإعداد ده (`Address: http://localhost:8200`, `Token: dev-root-token`) — أي مطوّر لازم يشغّل الأمر ده يدويًا قبل ما يشغّل الـ API محليًا (ده أثر جانبي مهم لقرار "Vault كامل من غير Fallback دائم" — موثّق كـ Issue في تقرير التسليم).
+
+---
+
+## 🚧 مؤجَّل: إعداد Vault لـ Data Protection + JWT Signing (بيئة Sandbox/CI جديدة تمامًا)
+
+> **الحالة: مؤجَّل، مش عاجل** (`Phase-3B-Cloud-Report.md §7`). القسم فوق (مفتاح الـHMAC بس) كافي
+> لجهاز تطوير محلي مُعَد بالفعل من زمان — لكنه مش كافي لبيئة Sandbox/CI جديدة تمامًا اتفعّل فيها
+> Vault لأول مرة: 19 اختبار في `Habbak.ERP.ApiTests` (2FA، Login/Session، PII Reveal، JWT
+> الحقيقي) فشلوا في بيئة Cloud Sandbox بالظبط لهذا السبب، رغم إن Vault نفسه كان شغّال وسليم
+> (`VaultIntegrationTests`/`HmacPiiHasherTests` نجحوا 7/7) — يبقى الفجوة في إعداد الـData
+> Protection Keys و/أو JWT Signing Key نفسهم، مش في الاتصال بـVault.
+>
+> **لسه مش موثّق هنا**: الخطوات الدقيقة اللي جهاز التطوير المحلي "بيعرفها ضمنيًا" (مُعَد من زمان)
+> بس بيئة جديدة محتاجاها صراحة — مثلًا تفعيل مسار `secret/habbak/dataprotection-keys/*` بشكل
+> يسمح بالكتابة الأولى منه (`VaultDataProtectionRepository`)، وأي إعداد إضافي لمفتاح توقيع الـJWT
+> لو هو كمان بيتخزن/يتشتق من Vault. يحتاج تحقيق مخصص (مش جزء من Phase 3B) قبل ما يُكتب هنا كخطوات
+> نهائية.

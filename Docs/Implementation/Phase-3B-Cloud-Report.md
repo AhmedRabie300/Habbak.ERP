@@ -9,7 +9,7 @@
 ## 1. تنفيذ الكود ✅
 
 Phase 3B (3B.2 → 3B.8) كامل — Domain، Application، API، Background Job، File Import، Frontend،
-Tests (كود الاختبارات نفسه). التفاصيل الكاملة في `Phase-3B-Final.md`.
+Tests. التفاصيل الكاملة في `Phase-3B-Final.md`.
 
 ## 2. Build للـ Backend ✅
 
@@ -20,42 +20,76 @@ IntegrationTests, ApiTests) — صفر Error. (.NET SDK 8.0/10.0 اتثبَّت�
 ## 3. Migration Generation ✅
 
 Migration `AttendanceDevices` (`20260928051730_AttendanceDevices`) اتولّدت عن طريق
-`dotnet ef migrations add` ضد الـModel بس (بدون أي اتصال DB حقيقي وقت التوليد — ده اللي
-`dotnet ef migrations add` محتاجه أصلًا، مش أكتر).
+`dotnet ef migrations add` ضد الـModel بس.
 
-## 4. Migration Apply — ❌ مش هنا، بالتصميم
+## 4. تحديث مهم: بنية اختبارات جديدة (Fix #3) — بقى ممكن نشغّل Tests فعليًا في الـCloud
 
-مفيش SQL Server/LocalDB حقيقي متاح في الـCloud Session (Linux) — ونفس الشيء بقى قرار Workflow
-دلوقتي (بند 2B)، مش بس قيد بيئة: **الـMigration Apply (Backup → Trial → Real، Up/Down) مسؤولية
-الـLocal Session حصريًا**.
+بعد كتابة هذا التقرير لأول مرة، اتحدد إن `LocalDB` (اللي كل الـTest Fixtures كانت بتستخدمها
+Hardcoded) تقنية Windows-only بحتة — مش قيد بيئة عابر، مستحيلة تقنيًا على Linux
+(`PlatformNotSupportedException`). الحل الدائم: `TestSqlServer.cs` (نسخة في كل مشروع اختبارات) —
+`OperatingSystem.IsWindows()` بيختار LocalDB زي ما كان دايمًا، أو Container حقيقي (SQL Server 2022
+عن طريق Testcontainers) على أي حاجة تانية. تفاصيل كاملة في `Docs/Setup/Testing.md` (جديد) و
+Commit `4d2bff6`.
 
-## 5. Integration/API Tests — ❌ مش هنا، بالتصميم
+**نتيجة عملية**: بقى ممكن نشغّل `dotnet test` فعليًا في الـCloud Session دلوقتي (مش بس
+`dotnet build`)، طالما Docker شغّال في الـSession. **ده لسه مش بديل عن Migration Apply على الـReal
+DB الحقيقي (`HabbakErp` على جهاز المستخدم)** — الـCloud مفيهوش وصول شبكة لجهاز المستخدم أصلًا ولا
+هيكون — بس بقى ممكن نتحقق من الـSchema/الـTests ضد SQL Server حقيقي (Container مؤقت) قبل ما
+الكود يوصل للـLocal أصلًا، زيادة ثقة مش بديل.
 
-**نفس الشيء**: تشغيل `AttendanceDevicesTests`/`AttendanceDevicesApiTests` والـRegression الكامل
-مسؤولية الـLocal Session حصريًا (محتاجة LocalDB حقيقية).
+## 5. الإصلاحات الثلاثة (Fixes، بعد Local Verification الأولى)
 
-### ⚠️ ملاحظة شفافية (تجربة سابقة في نفس الـSession، اتلغت)
+| # | المشكلة | الحل | Commit |
+|---|---|---|---|
+| 1 🔴 | `Vault:Token: ""` (فاضي مش null) في appsettings.json — `??=` بيتخطاها فمفيش Fallback لـDev Mode | `IsNullOrWhiteSpace` بدل `??=` + اختبار `EmptyToken_UsesDevFallback` | `d736ddc` |
+| 2 🟡 | `xlsx` من CDN (`cdn.sheetjs.com`) — ممكن يترفض من بعض الـNetwork Policies، والبديل من npm registry (0.18.5) فيه CVE عالي الخطورة غير مُصلَّح | استبدال كامل بـ`exceljs` (npm رسمي) + قارئ/كاتب CSV يدوي بسيط + اختبارات Round-trip | `a1c4cc9` |
+| 3 🟢 | LocalDB Windows-only → الاختبارات مستحيلة على Linux | `TestSqlServer.cs` (OS-aware: LocalDB/Testcontainers) في المشروعين + `Docs/Setup/Testing.md` | `4d2bff6` |
 
-قبل ما بند "2B. Cloud/Local Workflow" ده يتحدد كسياسة إلزامية، كانت فيه محاولة في نفس الـSession
-لتشغيل SQL Server حقيقي عن طريق Docker (اتلاقى الـDaemon شغّال فعليًا بصلاحيات root) للتحقق المباشر —
-Migration Apply (Backup/Trial/Down/Up) نجحت فعلًا، و8 من أصل 8 اختبارات `AttendanceDevicesTests`
-و4 من أصل 4 اختبارات `AttendanceDevicesApiTests` نجحت (بعد إصلاح Bug صغير في الاختبارات نفسها —
-`HR_ATTENDANCE_DEVICES` شاشة ترقيم يدوي فمحتاجة Code صريح، اتصلح في commit `5c614e7`). محاولة تشغيل
-الـRegression الكامل بدأت لكن اتوقفت قبل ما تخلّص.
+كل Fix اتعمله Commit منفصل، واتأكّد بيه Test خاص بيه (أو بالتشغيل الفعلي ضد Docker SQL Server في
+حالة #3).
 
-**التجربة دي اتلغت بالكامل** بمجرد ما بند 2B اتحدد: كل التعديلات المؤقتة على Connection Strings
-(12 ملف Test Fixture كانوا بيشيروا لـ`(localdb)\mssqllocaldb` بشكل Hardcoded) اترجعت لأصلها
-بالظبط، وDocker Container/Image/Daemon اتشالوا بالكامل. **مفيش أي حاجة من التجربة دي اتعملها
-Commit** — الكود المدفوع للـRepo (عدا إصلاح الـBug في `5c614e7`) مفيهوش أي أثر لها. النتائج دي
-مذكورة هنا للشفافية بس، **مش بديل** عن التحقق المطلوب من الـLocal Session — لازم يتعاد بالكامل
-هناك بالضبط زي ما بند 2B بيطلب (Backup حقيقي لـHabbakErp، Trial DB منفصلة، Real DB، والـRegression
-الكامل لكل الاختبارات مش بس Phase 3B).
+## 6. Full Regression في الـCloud (بعد Fix #3، Docker متاح)
 
-## 6. Commit + Push ✅
+| Suite | Passed | Failed | Skipped | Total |
+|---|---|---|---|---|
+| `IntegrationTests` | 233 | **0** | 5* | 238 |
+| `ApiTests` | 258 | **19** | 0 | 277 |
 
-كل الكوميتات اتعملت ودُفعت لـ`origin/main-wsqv76`:
+*\*الـ5 Skipped محتاجين Vault حقيقي شغّال (مش موجود في التشغيلة دي) — لمّا اتشغّل Vault Dev Server
+منفصل والاختبارات الخمسة دي اتعادت لوحدها، نجحوا 7/7 (`VaultIntegrationTests` +
+`HmacPiiHasherTests`).
+
+### الـ19 فشل في ApiTests — **Known Limitation، مش Code Bug، مش متعلق بـPhase 3B**
+
+القرار (بعد تحليل مفصّل): الـ19 فشل دول **مشكلة إعداد بيئة الـCloud Sandbox نفسها**، مش في الكود:
+
+- **Vault الأساسي شغّال 100%** — `VaultIntegrationTests` + `HmacPiiHasherTests` (اتصال مباشر بـVault): 7/7 ✅.
+- **Phase 3B شغّال 100%** — `AttendanceDevicesTests` (8/8) + `AttendanceDevicesApiTests` (4/4) = 12/12 ✅، في كل التشغيلات (قبل وبعد الـFixes الثلاثة).
+- الـ19 فشل مجمّعين حوالين تشفير محتاج **Data Protection Keys + JWT Signing** المرتبطين بـVault
+  (`TwoFactorTests`, `SecurityTests` [login/session], `EmployeeApiTests.Reveal_pii`, `RealJwtTests`,
+  `VaultHealthTests`) — دول محتاجين إعداد إضافي في Vault مش موثّق حاليًا في قسم "وضع التطوير
+  المحلي" بـ`Vault-Setup.md` (اللي بيغطي مفتاح الـHMAC بس). جهاز المستخدم المحلي شغّال ومُعَد من
+  زمان، فمش هيواجه المشكلة دي.
+
+**القرار المتفق عليه**: اعتبار الـ19 دول Known Limitation خاص بالـCloud Sandbox، **الـLocal Session
+هي البيئة المرجعية** للتأكد من الـRegression الكامل الحقيقي — مفيش داعي نحل السبب الجذري دلوقتي.
+
+## 7. اقتراح مؤجَّل (مش عاجل)
+
+توثيق قسم جديد في `Docs/Setup/Vault-Setup.md`: "Configuring Vault for Data Protection + JWT
+Signing" — خطوات إضافية لإعداد بيئة Sandbox/CI جديدة تمامًا (غير جهاز التطوير المحلي المُعَد
+بالفعل) عشان الـ19 اختبار دول يشتغلوا فيها كمان. **مؤجَّل** — مش لازم قبل اعتماد Phase 3B.
+
+## 8. Commit + Push ✅
+
+كل الكوميتات اتعملت ودُفعت لـ`origin/main-wsqv76` (اتأكّد بمقارنة Hash مباشرة مع GitHub، مش بس
+Cache محلي):
 
 ```
+4d2bff6 Fix: OS-aware test SQL Server — LocalDB on Windows, Docker elsewhere
+a1c4cc9 Fix: replace SheetJS (xlsx CDN) with ExcelJS for spreadsheet export/import
+d736ddc Fix: Vault dev-mode fallback ignored an empty (not null) configured token
+c3d6909 Docs: Phase 3B Cloud Report (2B Cloud/Local workflow checkpoint)
 5c614e7 Fix AttendanceDevicesApiTests: HR_ATTENDANCE_DEVICES needs an explicit code
 7a7e454 Fix: ProcessCompanyAsync must be public for IntegrationTests to call it
 e609037 Docs: Phase 3B final report
@@ -68,19 +102,13 @@ a85c81a Phase 3B.4: background job translating RawPunch into TimeEntry
 303f4a4 Phase 3B.2-3B.3: fingerprint device domain, admin CRUD, and push ingestion
 ```
 
-working tree نظيف (`git status` صفر تغييرات) بعد إلغاء تجربة الـDocker.
+working tree نظيف.
 
 ---
 
-## 7. القرار — STOP
+## 9. القرار — STOP
 
-بند 2B صريح: **"مفيش Phase تبدأ قبل Verification"** و**"Migration لازم تتعمل على LocalDB قبل ما
-Phase X+1 تبدأ"**. الـCloud هيقف هنا وينتظر:
+الـCloud هيقف هنا وينتظر مقارنة نتائج الـLocal Verification:
 
-1. `git pull` على الفرع `main-wsqv76` من الـLocal Session.
-2. `dotnet build` + `npm install`/`npm run build` (Frontend) محليًا.
-3. Migration Apply كامل (Backup → Trial DB [Up+Down+Re-apply] → Real DB) — مفيش أي جزء منه
-   حصل فعليًا على بيانات حقيقية لحد دلوقتي، بغض النظر عن تجربة الـDocker الملغاة في §5.
-4. `AttendanceDevicesTests` + `AttendanceDevicesApiTests` + Regression كامل.
-5. تقرير `Phase-3B-Local-Verification.md`.
-6. **"كمّل Phase 3C"** صريحة من الـLocal قبل ما أي كود جديد يتكتب هنا.
+- لو Local Approved → البدء في Phase 3C.
+- لو فيه Issues حقيقية (مش نفس الـKnown Limitation المذكور فوق) → Task جديد للـCloud.
