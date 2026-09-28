@@ -19,17 +19,17 @@ public sealed class HrCoreLookupsBatch1Tests : IAsyncLifetime
 {
     private readonly string _databaseName = $"HabbakErpTests_HrB1_{Guid.NewGuid():N}";
 
-    private string ConnectionString =>
-        $"Server=(localdb)\\mssqllocaldb;Database={_databaseName};Trusted_Connection=True;TrustServerCertificate=True;";
+    private string _connectionString = null!;
 
     private AppDbContext CreateContext(Habbak.ERP.Application.Common.Interfaces.ICurrentCompanyContext? companyContext = null)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(ConnectionString).Options;
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(_connectionString).Options;
         return new AppDbContext(options, companyContext);
     }
 
     public async Task InitializeAsync()
     {
+        _connectionString = await TestSqlServer.GetConnectionStringAsync(_databaseName);
         await using var context = CreateContext();
         await context.Database.MigrateAsync();
     }
@@ -56,7 +56,7 @@ public sealed class HrCoreLookupsBatch1Tests : IAsyncLifetime
     public async Task SystemDataSeeder_seeds_the_5_seed_only_lookups_without_error()
     {
         var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Default"] = ConnectionString })
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Default"] = _connectionString })
             .Build();
 
         await SystemDataSeeder.SeedAsync(configuration);

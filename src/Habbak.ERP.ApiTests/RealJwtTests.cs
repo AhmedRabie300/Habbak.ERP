@@ -23,22 +23,23 @@ namespace Habbak.ERP.ApiTests;
 public sealed class RealJwtApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly string _databaseName = $"HabbakErpJwtTests_{Guid.NewGuid():N}";
-    private string ConnectionString => $"Server=(localdb)\\mssqllocaldb;Database={_databaseName};Trusted_Connection=True;TrustServerCertificate=True;";
+    private string _connectionString = null!;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
         builder.ConfigureAppConfiguration((_, config) =>
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:Default"] = ConnectionString,
+                ["ConnectionStrings:Default"] = _connectionString,
                 ["Maintenance:Enabled"] = "false",
                 ["AttendanceDeviceJob:Enabled"] = "false"
             }));
 
     public AppDbContext CreateDirectDbContext() =>
-        new(new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(ConnectionString).Options);
+        new(new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(_connectionString).Options);
 
     public async Task InitializeAsync()
     {
+        _connectionString = await TestSqlServer.GetConnectionStringAsync(_databaseName);
         await using var db = CreateDirectDbContext();
         await db.Database.MigrateAsync();
     }

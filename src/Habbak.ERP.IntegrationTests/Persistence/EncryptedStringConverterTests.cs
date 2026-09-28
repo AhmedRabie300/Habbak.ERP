@@ -42,17 +42,17 @@ public sealed class EncryptedStringConverterTests : IAsyncLifetime
     private readonly string _keysPath = Path.Combine(Path.GetTempPath(), $"habbak-dp-test-{Guid.NewGuid():N}");
     private ISecretProtector _protector = null!;
 
-    private string ConnectionString =>
-        $"Server=(localdb)\\mssqllocaldb;Database={_databaseName};Trusted_Connection=True;TrustServerCertificate=True;";
+    private string _connectionString = null!;
 
     private EncryptedStringTestDbContext CreateContext()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(ConnectionString).Options;
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(_connectionString).Options;
         return new EncryptedStringTestDbContext(options, _protector);
     }
 
     public async Task InitializeAsync()
     {
+        _connectionString = await TestSqlServer.GetConnectionStringAsync(_databaseName);
         Directory.CreateDirectory(_keysPath);
         var provider = DataProtectionProvider.Create(new DirectoryInfo(_keysPath));
         _protector = new PiiSecretProtector(provider);

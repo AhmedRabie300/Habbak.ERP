@@ -12,20 +12,21 @@ namespace Habbak.ERP.ApiTests;
 
 /// <summary>
 /// Boots the real API host (00-Project-Overview.md, section 25: "xUnit + WebApplicationFactory"
-/// for API contract tests) against a fresh SQL Server LocalDB, with the Test auth scheme wired
-/// in as the default so requests authenticate via TestAuthHandler's headers instead of a real JWT.
+/// for API contract tests) against a fresh real SQL Server — LocalDB on Windows, a
+/// Testcontainers-managed container elsewhere (<see cref="TestSqlServer"/>,
+/// Docs/Setup/Testing.md) — with the Test auth scheme wired in as the default so requests
+/// authenticate via TestAuthHandler's headers instead of a real JWT.
 /// </summary>
 public class AccountingApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly string _databaseName = $"HabbakErpApiTests_{Guid.NewGuid():N}";
 
     /// <summary>
-    /// Every test class builds its own database and runs the whole migration chain; a dozen classes
-    /// doing that at once on one LocalDB instance goes well past the 30-second default, so the tests
-    /// wait rather than fail on a timeout that says nothing about the code.
+    /// Resolved in InitializeAsync, before this factory's host is ever built — ConfigureWebHost
+    /// (below) reads it synchronously the first time `Services`/`CreateClient()` is touched, which
+    /// InitializeAsync only does after this field is set.
     /// </summary>
-    private string ConnectionString =>
-        $"Server=(localdb)\\mssqllocaldb;Database={_databaseName};Trusted_Connection=True;TrustServerCertificate=True;Command Timeout=300;";
+    private string _connectionString = null!;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -33,7 +34,7 @@ public class AccountingApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:Default"] = ConnectionString,
+                ["ConnectionStrings:Default"] = _connectionString,
                 // The daily maintenance job has nothing to do in a test host.
                 ["Maintenance:Enabled"] = "false",
                 // Same reasoning — the attendance-device background job has no devices to poll here.
@@ -57,6 +58,7 @@ public class AccountingApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
 
     public async Task InitializeAsync()
     {
+        _connectionString = await TestSqlServer.GetConnectionStringAsync(_databaseName, commandTimeoutSeconds: 300);
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.MigrateAsync();
@@ -71,7 +73,7 @@ public class AccountingApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
     public AppDbContext CreateDirectDbContext(long companyId)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer(ConnectionString)
+            .UseSqlServer(_connectionString)
             .Options;
 
         return new AppDbContext(options, new SeedCurrentCompanyContext(companyId));

@@ -38,17 +38,17 @@ public sealed class EmployeeScopedEntityTests : IAsyncLifetime
 
     private readonly string _databaseName = $"HabbakErpTests_EmployeeScope_{Guid.NewGuid():N}";
 
-    private string ConnectionString =>
-        $"Server=(localdb)\\mssqllocaldb;Database={_databaseName};Trusted_Connection=True;TrustServerCertificate=True;";
+    private string _connectionString = null!;
 
     private EmployeeScopeTestDbContext CreateContext(ICurrentCompanyContext? currentCompanyContext = null)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(ConnectionString).Options;
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(_connectionString).Options;
         return new EmployeeScopeTestDbContext(options, currentCompanyContext);
     }
 
     public async Task InitializeAsync()
     {
+        _connectionString = await TestSqlServer.GetConnectionStringAsync(_databaseName);
         await using var context = CreateContext();
         await context.Database.EnsureCreatedAsync();
     }

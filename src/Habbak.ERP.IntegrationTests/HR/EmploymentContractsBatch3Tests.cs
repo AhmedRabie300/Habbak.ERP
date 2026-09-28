@@ -18,17 +18,17 @@ public sealed class EmploymentContractsBatch3Tests : IAsyncLifetime
 {
     private readonly string _databaseName = $"HabbakErpTests_HrB3_{Guid.NewGuid():N}";
 
-    private string ConnectionString =>
-        $"Server=(localdb)\\mssqllocaldb;Database={_databaseName};Trusted_Connection=True;TrustServerCertificate=True;";
+    private string _connectionString = null!;
 
     private AppDbContext CreateContext(ICurrentCompanyContext? companyContext = null)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(ConnectionString).Options;
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(_connectionString).Options;
         return new AppDbContext(options, companyContext);
     }
 
     public async Task InitializeAsync()
     {
+        _connectionString = await TestSqlServer.GetConnectionStringAsync(_databaseName);
         await using var context = CreateContext();
         await context.Database.MigrateAsync();
     }

@@ -45,17 +45,17 @@ public sealed class EmployeeBatch5Tests : IAsyncLifetime
     private ISecretProtector _protector = null!;
     private readonly IPiiHasher _hasher = new StubPiiHasher();
 
-    private string ConnectionString =>
-        $"Server=(localdb)\\mssqllocaldb;Database={_databaseName};Trusted_Connection=True;TrustServerCertificate=True;";
+    private string _connectionString = null!;
 
     private AppDbContext CreateContext(ICurrentCompanyContext? companyContext = null)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(ConnectionString).Options;
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(_connectionString).Options;
         return new AppDbContext(options, companyContext, piiProtector: _protector);
     }
 
     public async Task InitializeAsync()
     {
+        _connectionString = await TestSqlServer.GetConnectionStringAsync(_databaseName);
         Directory.CreateDirectory(_keysPath);
         var provider = DataProtectionProvider.Create(new DirectoryInfo(_keysPath));
         _protector = new PiiSecretProtector(provider);
