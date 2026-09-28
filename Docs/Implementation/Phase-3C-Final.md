@@ -80,7 +80,7 @@
 |---|---|
 | `dotnet build` (كل مشاريع الـBackend) | ✅ نظيف، صفر Error |
 | `dotnet test` — Phase3CContractLinesAndAttachmentsTests (Docker/Testcontainers) | ✅ 7/7 |
-| `dotnet test` — باقي HR Integration Tests (Regression) | *(انظر تحديث لاحق في نفس اليوم أو Local Verification)* |
+| `dotnet test --filter "FullyQualifiedName~HR"` (كل اختبارات HR + Phase 3C الجديدة، Docker/Testcontainers) | ✅ 96/96 — صفر Regression |
 | `tsc --noEmit` (Frontend) | ✅ نظيف |
 | `npm run build` (Frontend) | ✅ نظيف |
 | `npm run test` (Vitest) | ✅ 9/9 |
