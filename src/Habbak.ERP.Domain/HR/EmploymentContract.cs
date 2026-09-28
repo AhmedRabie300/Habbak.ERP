@@ -34,4 +34,14 @@ public class EmploymentContract : AuditableEntity, ICompanyScopedEntity, IBranch
     public EmploymentContract? PreviousContract { get; set; }
 
     public long? ApprovalInstanceId { get; set; }
+
+    /// <summary>Phase 3C, Remarks8 item 2 — same single-scalar-FK pattern as EmployeeDocument.AttachmentId,
+    /// but nullable: the contract is created before any file exists and gets one attached later via
+    /// SetEmploymentContractAttachmentCommand, not through the general Update command.</summary>
+    public long? AttachmentId { get; set; }
+    public Attachment? Attachment { get; set; }
+
+    /// <summary>Phase 3C, Remarks8 items 1 &amp; 4 — allowances/deductions on top of BasicSalary (e.g.
+    /// housing, transport). Replace-All on every Create/Update/Renew, same as BranchRequestLine.</summary>
+    public ICollection<EmploymentContractLine> Lines { get; set; } = new List<EmploymentContractLine>();
 }

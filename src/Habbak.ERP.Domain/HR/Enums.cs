@@ -24,3 +24,8 @@ public enum EmploymentContractStatus { Draft = 1, Active = 2, Expired = 3, Termi
 // لاحقًا مع EmployeeAdvance/EmployeePenalty/EmployeeBonus (Phase 5)، فمكانه هنا مش
 // Domain/Attendance/Enums.cs (Docs/Implementation/Phase-3-Research.md §3.5).
 public enum HrRequestStatus { Draft = 1, Pending = 2, Approved = 3, Rejected = 4, Cancelled = 5 }
+
+// Docs/Implementation/Phase-3C-Research.md §3.1 — EmploymentContractLine is a descriptive line on top
+// of BasicSalary (housing/transport allowances etc.), not a payroll calculation engine; that's the
+// future SalaryComponent (Phase 4), deliberately kept separate.
+public enum ContractLineType { Earning = 1, Deduction = 2 }

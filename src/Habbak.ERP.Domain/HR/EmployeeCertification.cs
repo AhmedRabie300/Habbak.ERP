@@ -20,4 +20,10 @@ public class EmployeeCertification : AuditableEntity, ICompanyScopedEntity, IBra
     public DateOnly IssueDate { get; set; }
     public DateOnly? ExpiryDate { get; set; }
     public string? CertificateNumber { get; set; }
+
+    /// <summary>Phase 3C, Remarks8 item 3 — same single-scalar-FK pattern as EmployeeDocument.AttachmentId,
+    /// nullable for the same reason as EmploymentContract.AttachmentId (set later via
+    /// SetEmployeeCertificationAttachmentCommand, not at creation).</summary>
+    public long? AttachmentId { get; set; }
+    public Attachment? Attachment { get; set; }
 }

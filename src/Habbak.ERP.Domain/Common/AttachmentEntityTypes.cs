@@ -23,9 +23,18 @@ public static class AttachmentEntityTypes
     /// EmployeeDocument row itself can be created.</summary>
     public const string EmployeeDocument = "EmployeeDocument";
 
+    /// <summary>Docs/Implementation/Phase-3C-Research.md §3.3 — same reason as EmployeeDocument: the
+    /// general upload endpoint needs a known EntityType at upload time even though the real
+    /// relationship afterwards is EmploymentContract.AttachmentId, a plain scalar FK.</summary>
+    public const string EmploymentContract = "EmploymentContract";
+
+    /// <summary>Docs/Implementation/Phase-3C-Research.md §3.3 — same reason, for EmployeeCertification.AttachmentId.</summary>
+    public const string EmployeeCertification = "EmployeeCertification";
+
     public static readonly string[] All =
     [
         JournalEntry, Voucher, TreasuryTransfer, PurchaseInvoice, PurchaseOrder,
-        GoodsReceipt, SupplierPayment, PurchaseReturn, SupplierContract, RFQ, EmployeeDocument
+        GoodsReceipt, SupplierPayment, PurchaseReturn, SupplierContract, RFQ, EmployeeDocument,
+        EmploymentContract, EmployeeCertification
     ];
 }

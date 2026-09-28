@@ -155,8 +155,26 @@ public class EmploymentContractConfiguration : IEntityTypeConfiguration<Employme
 
         builder.HasOne(c => c.Employee).WithMany().HasForeignKey(c => c.EmployeeId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(c => c.PreviousContract).WithMany().HasForeignKey(c => c.PreviousContractId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(c => c.Attachment).WithMany().HasForeignKey(c => c.AttachmentId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(c => c.EmployeeId);
+    }
+}
+
+public class EmploymentContractLineConfiguration : IEntityTypeConfiguration<EmploymentContractLine>
+{
+    public void Configure(EntityTypeBuilder<EmploymentContractLine> builder)
+    {
+        builder.ToTable("EmploymentContractLines");
+
+        builder.Property(l => l.NameAr).IsRequired().HasMaxLength(200);
+        builder.Property(l => l.NameEn).IsRequired().HasMaxLength(200);
+        builder.Property(l => l.Amount).HasPrecision(18, 4);
+
+        builder.HasOne(l => l.EmploymentContract)
+            .WithMany(c => c.Lines)
+            .HasForeignKey(l => l.EmploymentContractId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 
@@ -188,6 +206,7 @@ public class EmployeeCertificationConfiguration : IEntityTypeConfiguration<Emplo
         builder.Property(c => c.CertificateNumber).HasMaxLength(100);
 
         builder.HasOne(c => c.Employee).WithMany().HasForeignKey(c => c.EmployeeId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(c => c.Attachment).WithMany().HasForeignKey(c => c.AttachmentId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(c => c.EmployeeId);
     }
