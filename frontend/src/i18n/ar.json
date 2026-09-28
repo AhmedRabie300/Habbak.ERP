@@ -2951,7 +2951,18 @@
         "terminateAction": "إنهاء العقد",
         "renewSuccess": "تم تجديد العقد",
         "createSuccess": "تم إنشاء العقد",
-        "terminateSuccess": "تم إنهاء العقد"
+        "terminateSuccess": "تم إنهاء العقد",
+        "lines": {
+          "title": "بنود العقد",
+          "add": "+ بند",
+          "nameAr": "الاسم بالعربي",
+          "nameEn": "الاسم بالإنجليزي",
+          "amount": "المبلغ",
+          "type": "النوع",
+          "types": { "Earning": "بدل/إضافة", "Deduction": "خصم" },
+          "isTaxable": "خاضع للضريبة",
+          "isInsurable": "خاضع للتأمين"
+        }
       },
       "documents": {
         "add": "+ مستند جديد",
@@ -2967,6 +2978,12 @@
         "issuer": "جهة الإصدار",
         "certificateNumber": "رقم الشهادة",
         "requiredFields": "الاسم بالعربي/الإنجليزي وجهة الإصدار مطلوبين"
+      },
+      "attachment": {
+        "title": "المرفق",
+        "upload": "رفع مرفق",
+        "replace": "استبدال المرفق",
+        "success": "تم رفع المرفق"
       },
       "tabFingerprint": "ماكينة البصمة"
     },

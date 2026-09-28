@@ -6,6 +6,7 @@ export type Gender = 'Male' | 'Female';
 export type MaritalStatus = 'Single' | 'Married' | 'Divorced' | 'Widowed';
 export type ContractType = 'FixedTerm' | 'Indefinite';
 export type EmploymentContractStatus = 'Draft' | 'Active' | 'Expired' | 'Terminated';
+export type ContractLineType = 'Earning' | 'Deduction';
 
 export interface EmployeeListItem {
   id: number;
@@ -96,6 +97,27 @@ export interface EmployeeLookupItem {
   isActive: boolean;
 }
 
+export interface ContractLine {
+  id: number;
+  nameAr: string;
+  nameEn: string;
+  amount: number;
+  type: ContractLineType;
+  isTaxable: boolean;
+  isInsurable: boolean;
+  order: number;
+}
+
+export type ContractLineInput = {
+  nameAr: string;
+  nameEn: string;
+  amount: number;
+  type: ContractLineType;
+  isTaxable: boolean;
+  isInsurable: boolean;
+  order: number;
+};
+
 export interface EmploymentContract {
   id: number;
   employeeId: number;
@@ -110,6 +132,9 @@ export interface EmploymentContract {
   status: EmploymentContractStatus;
   previousContractId: number | null;
   approvalInstanceId: number | null;
+  attachmentId: number | null;
+  /** Populated by GetById; empty on the paginated list (Docs/Implementation/Phase-3C-Research.md §3.1). */
+  lines: ContractLine[];
 }
 
 export type EmploymentContractInput = {
@@ -120,6 +145,7 @@ export type EmploymentContractInput = {
   basicSalary: number;
   insurableWage: number;
   workingHoursPerDay: number;
+  lines?: ContractLineInput[];
 };
 
 export interface EmployeeDocument {
@@ -151,6 +177,7 @@ export interface EmployeeCertification {
   issueDate: string;
   expiryDate: string | null;
   certificateNumber: string | null;
+  attachmentId: number | null;
 }
 
 export type EmployeeCertificationInput = {

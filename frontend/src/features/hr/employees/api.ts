@@ -127,6 +127,16 @@ export function useContracts(employeeId: number | undefined, params: ListQueryPa
   });
 }
 
+/** Full detail incl. Lines — the paginated list leaves Lines empty (GetEmploymentContractsListQuery),
+ * so Renew's copy-forward prefill (Docs/Implementation/Phase-3C-Research.md §5.1) needs this instead. */
+export function useContractById(employeeId: number | undefined, id: number | undefined) {
+  return useQuery({
+    queryKey: ['hr-contracts', employeeId, id],
+    queryFn: async () => (await api.get<EmploymentContract>(`${BASE}/${employeeId}/contracts/${id}`)).data,
+    enabled: employeeId !== undefined && id !== undefined
+  });
+}
+
 export function useCreateContract(employeeId: number | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -163,6 +173,30 @@ export function useDeleteContract(employeeId: number | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => api.delete(`${BASE}/${employeeId}/contracts/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['hr-contracts', employeeId] })
+  });
+}
+
+/** Same upload-then-link flow as useUploadDocumentFile (§DocumentsTab) — the general attachments
+ * endpoint needs a known EntityType (AttachmentEntityTypes.EmploymentContract), then the returned id
+ * goes to useSetContractAttachment. */
+export function useUploadContractFile(employeeId: number | undefined) {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('entityType', 'EmploymentContract');
+      formData.append('entityId', String(employeeId));
+      formData.append('file', file);
+      return (await api.post<{ id: number }>('/attachments', formData, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
+    }
+  });
+}
+
+export function useSetContractAttachment(employeeId: number | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, attachmentId }: { id: number; attachmentId: number | null }) =>
+      api.put(`${BASE}/${employeeId}/contracts/${id}/attachment`, { attachmentId }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['hr-contracts', employeeId] })
   });
 }
@@ -246,6 +280,28 @@ export function useDeleteCertification(employeeId: number | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => api.delete(`${BASE}/${employeeId}/certifications/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['hr-certifications', employeeId] })
+  });
+}
+
+/** Same upload-then-link flow as useUploadDocumentFile/useUploadContractFile. */
+export function useUploadCertificationFile(employeeId: number | undefined) {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('entityType', 'EmployeeCertification');
+      formData.append('entityId', String(employeeId));
+      formData.append('file', file);
+      return (await api.post<{ id: number }>('/attachments', formData, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
+    }
+  });
+}
+
+export function useSetCertificationAttachment(employeeId: number | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, attachmentId }: { id: number; attachmentId: number | null }) =>
+      api.put(`${BASE}/${employeeId}/certifications/${id}/attachment`, { attachmentId }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['hr-certifications', employeeId] })
   });
 }

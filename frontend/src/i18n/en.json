@@ -2951,7 +2951,18 @@
         "terminateAction": "Terminate",
         "renewSuccess": "Contract renewed",
         "createSuccess": "Contract created",
-        "terminateSuccess": "Contract terminated"
+        "terminateSuccess": "Contract terminated",
+        "lines": {
+          "title": "Contract Lines",
+          "add": "+ Line",
+          "nameAr": "Name (Arabic)",
+          "nameEn": "Name (English)",
+          "amount": "Amount",
+          "type": "Type",
+          "types": { "Earning": "Earning", "Deduction": "Deduction" },
+          "isTaxable": "Taxable",
+          "isInsurable": "Insurable"
+        }
       },
       "documents": {
         "add": "+ New Document",
@@ -2967,6 +2978,12 @@
         "issuer": "Issuer",
         "certificateNumber": "Certificate Number",
         "requiredFields": "Name (Arabic/English) and issuer are required"
+      },
+      "attachment": {
+        "title": "Attachment",
+        "upload": "Upload Attachment",
+        "replace": "Replace Attachment",
+        "success": "Attachment uploaded"
       },
       "tabFingerprint": "Fingerprint Device"
     },

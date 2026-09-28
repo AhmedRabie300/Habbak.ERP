@@ -5,7 +5,9 @@ import { FieldWrapper, Input } from '../../../../ui-kit/Field';
 import { Button } from '../../../../ui-kit/Button';
 import { useToastStore } from '../../../../store/toastStore';
 import { getFieldErrorMessage } from '../../../../app/api';
-import { useCertifications, useCreateCertification, useDeleteCertification } from '../api';
+import { downloadAttachment } from '../../../common/attachments/api';
+import { useCertifications, useCreateCertification, useDeleteCertification, useSetCertificationAttachment, useUploadCertificationFile } from '../api';
+import { AttachmentCell } from '../AttachmentCell';
 import type { EmployeeCertification } from '../types';
 
 interface FormState {
@@ -32,6 +34,8 @@ export function CertificationsTab({ employeeId }: { employeeId: number }) {
 
   const createCertification = useCreateCertification(employeeId);
   const deleteCertification = useDeleteCertification(employeeId);
+  const uploadCertificationFile = useUploadCertificationFile(employeeId);
+  const setCertificationAttachment = useSetCertificationAttachment(employeeId);
 
   const startCreate = () => { setCreating(true); setForm(emptyForm()); };
   const cancel = () => setCreating(false);
@@ -58,6 +62,17 @@ export function CertificationsTab({ employeeId }: { employeeId: number }) {
     try {
       await deleteCertification.mutateAsync(certification.id);
       showToast(t('hr.deleteSuccess'), 'success');
+    } catch (error) {
+      const message = getFieldErrorMessage(error);
+      if (message) showToast(message, 'error');
+    }
+  };
+
+  const handleUploadAttachment = async (certification: EmployeeCertification, file: File) => {
+    try {
+      const uploaded = await uploadCertificationFile.mutateAsync(file);
+      await setCertificationAttachment.mutateAsync({ id: certification.id, attachmentId: uploaded.id });
+      showToast(t('hr.employees.attachment.success'), 'success');
     } catch (error) {
       const message = getFieldErrorMessage(error);
       if (message) showToast(message, 'error');
@@ -115,6 +130,7 @@ export function CertificationsTab({ employeeId }: { employeeId: number }) {
               <th style={{ textAlign: 'start', padding: 6 }}>{t('hr.employees.certifications.issuer')}</th>
               <th style={{ textAlign: 'start', padding: 6 }}>{t('hr.employees.documents.issueDate')}</th>
               <th style={{ textAlign: 'start', padding: 6 }}>{t('hr.employees.documents.expiryDate')}</th>
+              <th style={{ textAlign: 'start', padding: 6 }}>{t('hr.employees.attachment.title')}</th>
               <th style={{ textAlign: 'start', padding: 6 }} />
             </tr>
           </thead>
@@ -125,6 +141,13 @@ export function CertificationsTab({ employeeId }: { employeeId: number }) {
                 <td style={{ padding: 6 }}>{c.issuer}</td>
                 <td style={{ padding: 6 }}>{c.issueDate}</td>
                 <td style={{ padding: 6 }}>{c.expiryDate ?? '—'}</td>
+                <td style={{ padding: 6 }}>
+                  <AttachmentCell
+                    attachmentId={c.attachmentId}
+                    onUpload={(file) => handleUploadAttachment(c, file)}
+                    onDownload={() => downloadAttachment(c.attachmentId!, `certification-${c.id}`)}
+                  />
+                </td>
                 <td style={{ padding: 6 }}>
                   <Button variant="secondary" size="sm" onClick={() => handleDelete(c)}>{t('common.remove')}</Button>
                 </td>

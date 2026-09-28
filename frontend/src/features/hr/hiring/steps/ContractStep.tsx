@@ -7,7 +7,8 @@ import { Button } from '../../../../ui-kit/Button';
 import { useToastStore } from '../../../../store/toastStore';
 import { getFieldErrorMessage } from '../../../../app/api';
 import { useCreateContract } from '../../employees/api';
-import type { ContractType } from '../../employees/types';
+import { ContractLinesEditor } from '../../employees/ContractLinesEditor';
+import type { ContractLineInput, ContractType } from '../../employees/types';
 
 const CONTRACT_TYPES: ContractType[] = ['FixedTerm', 'Indefinite'];
 
@@ -19,6 +20,7 @@ interface FormState {
   basicSalary: string;
   insurableWage: string;
   workingHoursPerDay: string;
+  lines: ContractLineInput[];
 }
 
 /** خطوة 3: العقد (شامل الراتب الأساسي) — نفس حقول ContractsTab وقت الإنشاء، القرار الأول (Create
@@ -29,7 +31,7 @@ export function ContractStep({ employeeId, onComplete }: { employeeId: number; o
 
   const [form, setForm] = useState<FormState>({
     contractType: 'Indefinite', startDate: new Date().toISOString().slice(0, 10), endDate: '',
-    probationEndDate: '', basicSalary: '', insurableWage: '', workingHoursPerDay: '8'
+    probationEndDate: '', basicSalary: '', insurableWage: '', workingHoursPerDay: '8', lines: []
   });
 
   const createContract = useCreateContract(employeeId);
@@ -47,7 +49,8 @@ export function ContractStep({ employeeId, onComplete }: { employeeId: number; o
         probationEndDate: form.probationEndDate || undefined,
         basicSalary: Number(form.basicSalary),
         insurableWage: Number(form.insurableWage),
-        workingHoursPerDay: Number(form.workingHoursPerDay || 0)
+        workingHoursPerDay: Number(form.workingHoursPerDay || 0),
+        lines: form.lines
       });
       onComplete();
     } catch (error) {
@@ -86,6 +89,9 @@ export function ContractStep({ employeeId, onComplete }: { employeeId: number; o
           <FieldWrapper label={t('hr.employees.contracts.workingHoursPerDay')}>
             <Input type="number" value={form.workingHoursPerDay} onChange={(e) => setForm((f) => ({ ...f, workingHoursPerDay: e.target.value }))} style={{ width: 100 }} />
           </FieldWrapper>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <ContractLinesEditor lines={form.lines} onChange={(lines) => setForm((f) => ({ ...f, lines }))} />
         </div>
         <div style={{ marginTop: 16 }}>
           <Button variant="primary" onClick={handleNext}>{t('hr.hiring.next')}</Button>
