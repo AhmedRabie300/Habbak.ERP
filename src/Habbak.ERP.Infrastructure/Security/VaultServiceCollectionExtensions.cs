@@ -32,8 +32,19 @@ public static class VaultServiceCollectionExtensions
                 {
                     // Matches the local `vault server -dev` a developer runs by hand
                     // (Docs/Setup/Vault-Setup.md) — never used outside Development.
-                    address ??= "http://127.0.0.1:8200";
-                    token ??= "dev-root-token";
+                    // `??=` only replaces a null value: appsettings.json ships "Vault:Token": ""
+                    // (an empty string, not null, so callers never accidentally commit a real
+                    // token there) which `??=` would leave empty, so TokenAuthMethodInfo below
+                    // throws instead of falling back. IsNullOrWhiteSpace catches that case too.
+                    if (string.IsNullOrWhiteSpace(address))
+                    {
+                        address = "http://127.0.0.1:8200";
+                    }
+
+                    if (string.IsNullOrWhiteSpace(token))
+                    {
+                        token = "dev-root-token";
+                    }
                 }
                 else
                 {

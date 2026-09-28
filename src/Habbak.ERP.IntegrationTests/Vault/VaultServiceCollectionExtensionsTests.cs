@@ -59,4 +59,26 @@ public class VaultServiceCollectionExtensionsTests
 
         Assert.NotNull(client);
     }
+
+    /// <summary>
+    /// Regression for a real bug found while verifying Phase 3B: appsettings.json ships
+    /// "Vault:Token": "" (an empty string, not a missing key, so a real token is never
+    /// accidentally committed there) alongside a real "Vault:Address". The old code used
+    /// `token ??= "dev-root-token"`, which only replaces a null value — an empty string slipped
+    /// through untouched and reached VaultSharp's TokenAuthMethodInfo, which throws
+    /// ArgumentException on an empty token instead of the intended dev fallback ever kicking in.
+    /// </summary>
+    [Fact]
+    public void EmptyToken_UsesDevFallback()
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Vault:Address"] = "https://vault:8200", // present and non-empty, same as appsettings.json
+            ["Vault:Token"] = "" // present but empty, same as appsettings.json — not a missing key
+        }).Build();
+
+        var client = Build(configuration, Environments.Development);
+
+        Assert.NotNull(client);
+    }
 }
