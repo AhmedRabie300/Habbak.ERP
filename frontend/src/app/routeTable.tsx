@@ -178,6 +178,10 @@ import { HolidaysListPage, HolidayEditPage } from '../features/hr/holidays/Holid
 import { LeaveBalancesListPage } from '../features/hr/leaveBalances/LeaveBalancePages';
 import { LeaveRequestsListPage, LeaveRequestEditPage } from '../features/hr/leaveRequests/LeaveRequestPages';
 import { OvertimeRequestsListPage, OvertimeRequestEditPage } from '../features/hr/overtimeRequests/OvertimeRequestPages';
+import { AttendanceDevicesListPage, AttendanceDeviceEditPage } from '../features/hr/attendanceDevices/AttendanceDevicePages';
+import { EmployeeDeviceMappingsPage } from '../features/hr/employeeDeviceMappings/EmployeeDeviceMappingsPage';
+import { AttendanceDeviceLogsPage } from '../features/hr/attendanceDeviceLogs/AttendanceDeviceLogsPage';
+import { AttendanceReconciliationPage } from '../features/hr/attendanceReconciliation/AttendanceReconciliationPage';
 import { ApprovalWorkflowsListPage } from '../features/settings/approvals/ApprovalWorkflowsListPage';
 import { ApprovalWorkflowEditPage } from '../features/settings/approvals/ApprovalWorkflowEditPage';
 import { MyPendingApprovalsPage } from '../features/approvals/MyPendingApprovalsPage';
@@ -390,6 +394,12 @@ export const appRoutes = (
     <Route path="/hr/leave-requests/new" element={<LeaveRequestEditPage />} />
     <Route path="/hr/overtime-requests" element={<OvertimeRequestsListPage />} />
     <Route path="/hr/overtime-requests/new" element={<OvertimeRequestEditPage />} />
+
+    <Route path="/hr/attendance-devices" element={<AttendanceDevicesListPage />} />
+    <Route path="/hr/attendance-devices/:id" element={<AttendanceDeviceEditPage />} />
+    <Route path="/hr/employee-device-mappings" element={<EmployeeDeviceMappingsPage />} />
+    <Route path="/hr/attendance-device-logs" element={<AttendanceDeviceLogsPage />} />
+    <Route path="/hr/attendance-reconciliation" element={<AttendanceReconciliationPage />} />
 
     <Route path="/settings/approval-workflows" element={<ApprovalWorkflowsListPage />} />
     <Route path="/settings/approval-workflows/:id" element={<ApprovalWorkflowEditPage />} />

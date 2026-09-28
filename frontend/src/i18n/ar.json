@@ -44,7 +44,10 @@
     "themeHabbak": "الحبّاك",
     "themeNozomsoft": "NozomSoft",
     "newRecord": "جديد",
-    "reject": "رفض"
+    "reject": "رفض",
+    "all": "الكل",
+    "fromDate": "من تاريخ",
+    "toDate": "إلى تاريخ"
   },
   "attachments": {
     "title": "المرفقات",
@@ -2964,7 +2967,8 @@
         "issuer": "جهة الإصدار",
         "certificateNumber": "رقم الشهادة",
         "requiredFields": "الاسم بالعربي/الإنجليزي وجهة الإصدار مطلوبين"
-      }
+      },
+      "tabFingerprint": "ماكينة البصمة"
     },
     "hiring": {
       "title": "معالج التعيين",
@@ -3168,6 +3172,47 @@
         "branch": "الفرع",
         "allBranches": "كل الفروع",
         "deleteConfirm": "متأكد من حذف العطلة؟"
+      },
+      "devices": {
+        "title": "أجهزة البصمة",
+        "add": "+ جهاز جديد",
+        "model": "الموديل",
+        "serialNumber": "الرقم التسلسلي",
+        "lastSeen": "آخر ظهور",
+        "deleteConfirm": "حذف هذا الجهاز؟",
+        "secretRevealTitle": "سر الجهاز (يظهر مرة واحدة)",
+        "secretRevealHint": "انسخ السر الآن واحفظه في إعدادات الجهاز — لن يظهر مرة أخرى.",
+        "secretSectionTitle": "سر الجهاز",
+        "regenerateSecret": "إعادة توليد السر",
+        "importSectionTitle": "استيراد بصمات من ملف",
+        "importHint": "ارفع ملف تصدير USB من الجهاز (csv أو txt أو dat أو xlsx).",
+        "importResult": "تم قبول {{accepted}}، تكرار {{duplicates}}، من إجمالي {{received}}."
+      },
+      "deviceMappings": {
+        "title": "ربط الموظفين بأجهزة البصمة",
+        "add": "+ ربط موظف",
+        "deviceUserId": "رقم المستخدم على الجهاز",
+        "requiredFields": "من فضلك اختر الموظف والجهاز ورقم المستخدم."
+      },
+      "deviceLogs": {
+        "title": "سجل مزامنة أجهزة البصمة",
+        "syncType": "نوع المزامنة",
+        "startedAt": "بدأت في",
+        "status": "الحالة",
+        "received": "المستلم",
+        "processed": "المُعالَج",
+        "error": "الخطأ"
+      },
+      "reconciliation": {
+        "title": "تسوية بصمات الأجهزة",
+        "totalReceived": "إجمالي المستلم",
+        "processed": "تمت معالجته",
+        "pending": "قيد الانتظار",
+        "skippedNoMapping": "متخطّى (بدون ربط)",
+        "skippedOther": "متخطّى (أخرى)",
+        "punchTime": "وقت البصمة",
+        "status": "الحالة",
+        "skipReason": "سبب التخطي"
       }
     }
   },

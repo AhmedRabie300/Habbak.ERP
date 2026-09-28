@@ -44,7 +44,10 @@
     "themeHabbak": "Al Habbak",
     "themeNozomsoft": "NozomSoft",
     "newRecord": "New",
-    "reject": "Reject"
+    "reject": "Reject",
+    "all": "All",
+    "fromDate": "From Date",
+    "toDate": "To Date"
   },
   "attachments": {
     "title": "Attachments",
@@ -2964,7 +2967,8 @@
         "issuer": "Issuer",
         "certificateNumber": "Certificate Number",
         "requiredFields": "Name (Arabic/English) and issuer are required"
-      }
+      },
+      "tabFingerprint": "Fingerprint Device"
     },
     "hiring": {
       "title": "Hiring Wizard",
@@ -3168,6 +3172,47 @@
         "branch": "Branch",
         "allBranches": "All Branches",
         "deleteConfirm": "Delete this holiday?"
+      },
+      "devices": {
+        "title": "Attendance Devices",
+        "add": "+ New Device",
+        "model": "Model",
+        "serialNumber": "Serial Number",
+        "lastSeen": "Last Seen",
+        "deleteConfirm": "Delete this device?",
+        "secretRevealTitle": "Device Secret (shown once)",
+        "secretRevealHint": "Copy this secret now and store it on the device — it will not be shown again.",
+        "secretSectionTitle": "Device Secret",
+        "regenerateSecret": "Regenerate Secret",
+        "importSectionTitle": "Import Punches from File",
+        "importHint": "Upload a USB export (csv, txt, dat or xlsx) from the device.",
+        "importResult": "{{accepted}} accepted, {{duplicates}} duplicates, {{received}} received."
+      },
+      "deviceMappings": {
+        "title": "Employee Device Mappings",
+        "add": "+ Link Employee",
+        "deviceUserId": "Device User ID",
+        "requiredFields": "Please fill in employee, device and device user ID."
+      },
+      "deviceLogs": {
+        "title": "Attendance Device Sync Log",
+        "syncType": "Sync Type",
+        "startedAt": "Started At",
+        "status": "Status",
+        "received": "Received",
+        "processed": "Processed",
+        "error": "Error"
+      },
+      "reconciliation": {
+        "title": "Attendance Reconciliation",
+        "totalReceived": "Total Received",
+        "processed": "Processed",
+        "pending": "Pending",
+        "skippedNoMapping": "Skipped (No Mapping)",
+        "skippedOther": "Skipped (Other)",
+        "punchTime": "Punch Time",
+        "status": "Status",
+        "skipReason": "Skip Reason"
       }
     }
   },

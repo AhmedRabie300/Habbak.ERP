@@ -13,8 +13,9 @@ import { PersonalInfoTab } from './tabs/PersonalInfoTab';
 import { ContractsTab } from './tabs/ContractsTab';
 import { DocumentsTab } from './tabs/DocumentsTab';
 import { CertificationsTab } from './tabs/CertificationsTab';
+import { FingerprintTab } from './tabs/FingerprintTab';
 
-type TabId = 'basic' | 'personal' | 'contracts' | 'documents' | 'certifications';
+type TabId = 'basic' | 'personal' | 'contracts' | 'documents' | 'certifications' | 'fingerprint';
 
 /** /hr/employees/:id — screen HR_EMPLOYEES. 5 tabs via SectionTabs (ui-kit, built in 1.5.1) — the
  * 4 follower tabs need an existing employee id (same "save first" precedent as AttachmentPanel),
@@ -61,7 +62,8 @@ export function EmployeeEditPage() {
     { id: 'personal', label: t('hr.employees.tabPersonal') },
     { id: 'contracts', label: t('hr.employees.tabContracts') },
     { id: 'documents', label: t('hr.employees.tabDocuments') },
-    { id: 'certifications', label: t('hr.employees.tabCertifications') }
+    { id: 'certifications', label: t('hr.employees.tabCertifications') },
+    { id: 'fingerprint', label: t('hr.employees.tabFingerprint') }
   ];
 
   const selectTab = (tabId: string) => {
@@ -101,6 +103,7 @@ export function EmployeeEditPage() {
       {activeTab === 'contracts' && employeeId && <ContractsTab employeeId={employeeId} />}
       {activeTab === 'documents' && employeeId && <DocumentsTab employeeId={employeeId} />}
       {activeTab === 'certifications' && employeeId && <CertificationsTab employeeId={employeeId} />}
+      {activeTab === 'fingerprint' && employeeId && <FingerprintTab employeeId={employeeId} />}
     </div>
   );
 }
