@@ -2,6 +2,7 @@ using Habbak.ERP.API.Auth;
 using Habbak.ERP.Application.Common.Models;
 using Habbak.ERP.Application.HR.EmployeeCertifications.Commands.CreateEmployeeCertification;
 using Habbak.ERP.Application.HR.EmployeeCertifications.Commands.DeleteEmployeeCertification;
+using Habbak.ERP.Application.HR.EmployeeCertifications.Commands.SetEmployeeCertificationAttachment;
 using Habbak.ERP.Application.HR.EmployeeCertifications.Commands.UpdateEmployeeCertification;
 using Habbak.ERP.Application.HR.EmployeeCertifications.Queries.GetEmployeeCertificationById;
 using Habbak.ERP.Application.HR.EmployeeCertifications.Queries.GetEmployeeCertificationsList;
@@ -13,8 +14,10 @@ using Habbak.ERP.Application.HR.EmployeeDocuments.Queries.GetEmployeeDocumentsLi
 using Habbak.ERP.Application.HR.EmploymentContracts.Commands.CreateEmploymentContract;
 using Habbak.ERP.Application.HR.EmploymentContracts.Commands.DeleteEmploymentContract;
 using Habbak.ERP.Application.HR.EmploymentContracts.Commands.RenewEmploymentContract;
+using Habbak.ERP.Application.HR.EmploymentContracts.Commands.SetEmploymentContractAttachment;
 using Habbak.ERP.Application.HR.EmploymentContracts.Commands.TerminateEmploymentContract;
 using Habbak.ERP.Application.HR.EmploymentContracts.Commands.UpdateEmploymentContract;
+using Habbak.ERP.Application.HR.EmploymentContracts.Dtos;
 using Habbak.ERP.Application.HR.EmploymentContracts.Queries.GetEmploymentContractById;
 using Habbak.ERP.Application.HR.EmploymentContracts.Queries.GetEmploymentContractsList;
 using Habbak.ERP.Domain.HR;
@@ -40,15 +43,20 @@ public class EmploymentContractsController(ISender mediator) : ControllerBase
 {
     public sealed record CreateEmploymentContractRequest(
         ContractType ContractType, DateOnly StartDate, DateOnly? EndDate, DateOnly? ProbationEndDate,
-        decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay);
+        decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay,
+        IReadOnlyList<ContractLineInput>? Lines = null);
 
     public sealed record UpdateEmploymentContractRequest(
         ContractType ContractType, DateOnly StartDate, DateOnly? EndDate, DateOnly? ProbationEndDate,
-        decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay);
+        decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay,
+        IReadOnlyList<ContractLineInput>? Lines = null);
 
     public sealed record RenewEmploymentContractRequest(
         ContractType ContractType, DateOnly StartDate, DateOnly? EndDate, DateOnly? ProbationEndDate,
-        decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay);
+        decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay,
+        IReadOnlyList<ContractLineInput>? Lines = null);
+
+    public sealed record SetEmploymentContractAttachmentRequest(long? AttachmentId);
 
     [HttpGet]
     public async Task<IActionResult> GetList(long employeeId, [FromQuery] ListQuery query, CancellationToken cancellationToken) =>
@@ -63,7 +71,7 @@ public class EmploymentContractsController(ISender mediator) : ControllerBase
     {
         var id = await mediator.Send(new CreateEmploymentContractCommand(
             employeeId, request.ContractType, request.StartDate, request.EndDate, request.ProbationEndDate,
-            request.BasicSalary, request.InsurableWage, request.WorkingHoursPerDay), cancellationToken);
+            request.BasicSalary, request.InsurableWage, request.WorkingHoursPerDay, request.Lines), cancellationToken);
         return Ok(new { id });
     }
 
@@ -72,7 +80,7 @@ public class EmploymentContractsController(ISender mediator) : ControllerBase
     {
         await mediator.Send(new UpdateEmploymentContractCommand(
             id, request.ContractType, request.StartDate, request.EndDate, request.ProbationEndDate,
-            request.BasicSalary, request.InsurableWage, request.WorkingHoursPerDay), cancellationToken);
+            request.BasicSalary, request.InsurableWage, request.WorkingHoursPerDay, request.Lines), cancellationToken);
         return NoContent();
     }
 
@@ -88,7 +96,7 @@ public class EmploymentContractsController(ISender mediator) : ControllerBase
     {
         var newId = await mediator.Send(new RenewEmploymentContractCommand(
             id, request.ContractType, request.StartDate, request.EndDate, request.ProbationEndDate,
-            request.BasicSalary, request.InsurableWage, request.WorkingHoursPerDay), cancellationToken);
+            request.BasicSalary, request.InsurableWage, request.WorkingHoursPerDay, request.Lines), cancellationToken);
         return Ok(new { id = newId });
     }
 
@@ -96,6 +104,13 @@ public class EmploymentContractsController(ISender mediator) : ControllerBase
     public async Task<IActionResult> Terminate(long employeeId, long id, CancellationToken cancellationToken)
     {
         await mediator.Send(new TerminateEmploymentContractCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPut("{id:long}/attachment")]
+    public async Task<IActionResult> SetAttachment(long employeeId, long id, [FromBody] SetEmploymentContractAttachmentRequest request, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new SetEmploymentContractAttachmentCommand(id, request.AttachmentId), cancellationToken);
         return NoContent();
     }
 }
@@ -149,6 +164,7 @@ public class EmployeeCertificationsController(ISender mediator) : ControllerBase
 {
     public sealed record CreateEmployeeCertificationRequest(string NameAr, string NameEn, string Issuer, DateOnly IssueDate, DateOnly? ExpiryDate, string? CertificateNumber);
     public sealed record UpdateEmployeeCertificationRequest(string NameAr, string NameEn, string Issuer, DateOnly IssueDate, DateOnly? ExpiryDate, string? CertificateNumber);
+    public sealed record SetEmployeeCertificationAttachmentRequest(long? AttachmentId);
 
     [HttpGet]
     public async Task<IActionResult> GetList(long employeeId, CancellationToken cancellationToken) =>
@@ -178,6 +194,13 @@ public class EmployeeCertificationsController(ISender mediator) : ControllerBase
     public async Task<IActionResult> Delete(long employeeId, long id, CancellationToken cancellationToken)
     {
         await mediator.Send(new DeleteEmployeeCertificationCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPut("{id:long}/attachment")]
+    public async Task<IActionResult> SetAttachment(long employeeId, long id, [FromBody] SetEmployeeCertificationAttachmentRequest request, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new SetEmployeeCertificationAttachmentCommand(id, request.AttachmentId), cancellationToken);
         return NoContent();
     }
 }

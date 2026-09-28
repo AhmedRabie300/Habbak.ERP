@@ -20,7 +20,8 @@ public sealed class GetEmployeeCertificationsListQueryHandler(IApplicationDbCont
             .Select(c => new EmployeeCertificationDto
             {
                 Id = c.Id, EmployeeId = c.EmployeeId, BranchId = c.BranchId, NameAr = c.NameAr, NameEn = c.NameEn,
-                Issuer = c.Issuer, IssueDate = c.IssueDate, ExpiryDate = c.ExpiryDate, CertificateNumber = c.CertificateNumber
+                Issuer = c.Issuer, IssueDate = c.IssueDate, ExpiryDate = c.ExpiryDate, CertificateNumber = c.CertificateNumber,
+                AttachmentId = c.AttachmentId
             })
             .ToListAsync(cancellationToken);
     }

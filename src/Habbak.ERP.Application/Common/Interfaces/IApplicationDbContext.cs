@@ -84,6 +84,7 @@ public interface IApplicationDbContext
     DbSet<Employee> Employees { get; }
     DbSet<EmployeePersonalData> EmployeePersonalDataRows { get; }
     DbSet<EmploymentContract> EmploymentContracts { get; }
+    DbSet<EmploymentContractLine> EmploymentContractLines { get; }
     DbSet<EmployeeDocument> EmployeeDocuments { get; }
     DbSet<EmployeeCertification> EmployeeCertifications { get; }
     DbSet<HrSettings> HrSettingsRows { get; }

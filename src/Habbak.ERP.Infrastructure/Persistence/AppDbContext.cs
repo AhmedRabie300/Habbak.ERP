@@ -217,6 +217,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     // HR Core, Batch B3 — the Employee "followers" (IEmployeeScopedEntity's first real use).
     public DbSet<EmploymentContract> EmploymentContracts => Set<EmploymentContract>();
+    public DbSet<EmploymentContractLine> EmploymentContractLines => Set<EmploymentContractLine>();
     public DbSet<EmployeeDocument> EmployeeDocuments => Set<EmployeeDocument>();
     public DbSet<EmployeeCertification> EmployeeCertifications => Set<EmployeeCertification>();
     public DbSet<HrSettings> HrSettingsRows => Set<HrSettings>();

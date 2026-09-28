@@ -2,6 +2,7 @@ using FluentValidation;
 using Habbak.ERP.Application.Common.Exceptions;
 using Habbak.ERP.Application.Common.Interfaces;
 using Habbak.ERP.Application.HR.EmploymentContracts.Commands.CreateEmploymentContract;
+using Habbak.ERP.Application.HR.EmploymentContracts.Dtos;
 using Habbak.ERP.Domain.HR;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,8 @@ namespace Habbak.ERP.Application.HR.EmploymentContracts.Commands.RenewEmployment
 /// </summary>
 public sealed record RenewEmploymentContractCommand(
     long PreviousContractId, ContractType ContractType, DateOnly StartDate, DateOnly? EndDate, DateOnly? ProbationEndDate,
-    decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay) : IRequest<long>;
+    decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay,
+    IReadOnlyList<ContractLineInput>? Lines = null) : IRequest<long>;
 
 public sealed class RenewEmploymentContractCommandValidator : AbstractValidator<RenewEmploymentContractCommand>
 {
@@ -29,6 +31,13 @@ public sealed class RenewEmploymentContractCommandValidator : AbstractValidator<
         RuleFor(x => x.WorkingHoursPerDay).GreaterThan(0);
         RuleFor(x => x.EndDate).GreaterThan(x => x.StartDate).When(x => x.EndDate.HasValue)
             .WithMessage("تاريخ نهاية العقد لازم يكون بعد تاريخ البداية.");
+
+        RuleForEach(x => x.Lines).ChildRules(line =>
+        {
+            line.RuleFor(l => l.NameAr).NotEmpty().MaximumLength(200);
+            line.RuleFor(l => l.NameEn).NotEmpty().MaximumLength(200);
+            line.RuleFor(l => l.Amount).GreaterThan(0);
+        });
     }
 }
 
@@ -66,6 +75,11 @@ public sealed class RenewEmploymentContractCommandHandler(IApplicationDbContext 
                 ? EmploymentContractStatus.Active
                 : EmploymentContractStatus.Draft
         };
+
+        foreach (var line in request.Lines ?? [])
+        {
+            newContract.Lines.Add(line.ToEntity());
+        }
 
         db.EmploymentContracts.Add(newContract);
         await db.SaveChangesAsync(cancellationToken);

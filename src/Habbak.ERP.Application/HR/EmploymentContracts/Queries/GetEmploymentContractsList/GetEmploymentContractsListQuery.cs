@@ -40,7 +40,8 @@ public sealed class GetEmploymentContractsListQueryHandler(IApplicationDbContext
                 Id = c.Id, EmployeeId = c.EmployeeId, BranchId = c.BranchId, ContractType = c.ContractType,
                 StartDate = c.StartDate, EndDate = c.EndDate, ProbationEndDate = c.ProbationEndDate,
                 BasicSalary = c.BasicSalary, InsurableWage = c.InsurableWage, WorkingHoursPerDay = c.WorkingHoursPerDay,
-                Status = c.Status, PreviousContractId = c.PreviousContractId, ApprovalInstanceId = c.ApprovalInstanceId
+                Status = c.Status, PreviousContractId = c.PreviousContractId, ApprovalInstanceId = c.ApprovalInstanceId,
+                AttachmentId = c.AttachmentId, Lines = Array.Empty<ContractLineDto>()
             })
             .ToListAsync(cancellationToken);
 

@@ -1,8 +1,10 @@
 using FluentValidation;
 using Habbak.ERP.Application.Common.Exceptions;
 using Habbak.ERP.Application.Common.Interfaces;
+using Habbak.ERP.Application.HR.EmploymentContracts.Dtos;
 using Habbak.ERP.Domain.HR;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Habbak.ERP.Application.HR.EmploymentContracts.Commands.UpdateEmploymentContract;
 
@@ -14,7 +16,8 @@ namespace Habbak.ERP.Application.HR.EmploymentContracts.Commands.UpdateEmploymen
 /// </summary>
 public sealed record UpdateEmploymentContractCommand(
     long Id, ContractType ContractType, DateOnly StartDate, DateOnly? EndDate, DateOnly? ProbationEndDate,
-    decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay) : IRequest;
+    decimal BasicSalary, decimal InsurableWage, int WorkingHoursPerDay,
+    IReadOnlyList<ContractLineInput>? Lines = null) : IRequest;
 
 public sealed class UpdateEmploymentContractCommandValidator : AbstractValidator<UpdateEmploymentContractCommand>
 {
@@ -26,6 +29,13 @@ public sealed class UpdateEmploymentContractCommandValidator : AbstractValidator
         RuleFor(x => x.WorkingHoursPerDay).GreaterThan(0);
         RuleFor(x => x.EndDate).GreaterThan(x => x.StartDate).When(x => x.EndDate.HasValue)
             .WithMessage("تاريخ نهاية العقد لازم يكون بعد تاريخ البداية.");
+
+        RuleForEach(x => x.Lines).ChildRules(line =>
+        {
+            line.RuleFor(l => l.NameAr).NotEmpty().MaximumLength(200);
+            line.RuleFor(l => l.NameEn).NotEmpty().MaximumLength(200);
+            line.RuleFor(l => l.Amount).GreaterThan(0);
+        });
     }
 }
 
@@ -33,7 +43,7 @@ public sealed class UpdateEmploymentContractCommandHandler(IApplicationDbContext
 {
     public async Task Handle(UpdateEmploymentContractCommand request, CancellationToken cancellationToken)
     {
-        var contract = await db.EmploymentContracts.FindAsync([request.Id], cancellationToken)
+        var contract = await db.EmploymentContracts.Include(c => c.Lines).FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(EmploymentContract), request.Id);
 
         contract.ContractType = request.ContractType;
@@ -43,6 +53,16 @@ public sealed class UpdateEmploymentContractCommandHandler(IApplicationDbContext
         contract.BasicSalary = request.BasicSalary;
         contract.InsurableWage = request.InsurableWage;
         contract.WorkingHoursPerDay = request.WorkingHoursPerDay;
+
+        if (request.Lines is not null)
+        {
+            db.EmploymentContractLines.RemoveRange(contract.Lines);
+            contract.Lines.Clear();
+            foreach (var line in request.Lines)
+            {
+                contract.Lines.Add(line.ToEntity());
+            }
+        }
 
         await db.SaveChangesAsync(cancellationToken);
     }

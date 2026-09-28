@@ -11,4 +11,5 @@ public sealed class EmployeeCertificationDto
     public required DateOnly IssueDate { get; init; }
     public DateOnly? ExpiryDate { get; init; }
     public string? CertificateNumber { get; init; }
+    public long? AttachmentId { get; init; }
 }
