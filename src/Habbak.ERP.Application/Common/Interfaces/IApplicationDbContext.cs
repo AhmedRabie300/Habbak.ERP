@@ -6,6 +6,7 @@ using Habbak.ERP.Domain.Inventory;
 using Habbak.ERP.Domain.Notifications;
 using Habbak.ERP.Domain.Organization;
 using Habbak.ERP.Domain.POS;
+using Habbak.ERP.Domain.Payroll;
 using Habbak.ERP.Domain.Purchasing;
 using Habbak.ERP.Domain.Sales;
 using Habbak.ERP.Domain.Settings;
@@ -107,6 +108,19 @@ public interface IApplicationDbContext
     DbSet<Habbak.ERP.Domain.Attendance.AttendanceDeviceLog> AttendanceDeviceLogs { get; }
     DbSet<Habbak.ERP.Domain.Attendance.EmployeeDeviceMapping> EmployeeDeviceMappings { get; }
     DbSet<Habbak.ERP.Domain.Attendance.RawPunch> RawPunches { get; }
+
+    // Phase 4 — Payroll legal tables (Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.2).
+    DbSet<MinimumWage> MinimumWages { get; }
+    DbSet<SocialInsuranceRate> SocialInsuranceRates { get; }
+    DbSet<InsurableWageLimit> InsurableWageLimits { get; }
+    DbSet<PayrollTaxBracketSet> PayrollTaxBracketSets { get; }
+    DbSet<PayrollTaxBracket> PayrollTaxBrackets { get; }
+    DbSet<MartyrsFundRate> MartyrsFundRates { get; }
+    DbSet<OvertimeRate> OvertimeRates { get; }
+    DbSet<LeaveEntitlementRule> LeaveEntitlementRules { get; }
+    DbSet<PenaltyDeductionCap> PenaltyDeductionCaps { get; }
+    DbSet<NoticePeriodRule> NoticePeriodRules { get; }
+    DbSet<EndOfServicePolicy> EndOfServicePolicies { get; }
 
     // System-wide (00-System-Wide-Corrections-01.md, sections 3-4)
     DbSet<MenuItem> MenuItems { get; }

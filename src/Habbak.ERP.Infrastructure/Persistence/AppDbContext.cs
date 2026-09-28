@@ -8,6 +8,7 @@ using Habbak.ERP.Domain.Inventory;
 using Habbak.ERP.Domain.Notifications;
 using Habbak.ERP.Domain.Organization;
 using Habbak.ERP.Domain.POS;
+using Habbak.ERP.Domain.Payroll;
 using Habbak.ERP.Domain.Purchasing;
 using Habbak.ERP.Domain.Sales;
 using Habbak.ERP.Domain.Settings;
@@ -241,6 +242,19 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<Habbak.ERP.Domain.Attendance.AttendanceDeviceLog> AttendanceDeviceLogs => Set<Habbak.ERP.Domain.Attendance.AttendanceDeviceLog>();
     public DbSet<Habbak.ERP.Domain.Attendance.EmployeeDeviceMapping> EmployeeDeviceMappings => Set<Habbak.ERP.Domain.Attendance.EmployeeDeviceMapping>();
     public DbSet<Habbak.ERP.Domain.Attendance.RawPunch> RawPunches => Set<Habbak.ERP.Domain.Attendance.RawPunch>();
+
+    // Phase 4 — Payroll legal tables (Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.2).
+    public DbSet<MinimumWage> MinimumWages => Set<MinimumWage>();
+    public DbSet<SocialInsuranceRate> SocialInsuranceRates => Set<SocialInsuranceRate>();
+    public DbSet<InsurableWageLimit> InsurableWageLimits => Set<InsurableWageLimit>();
+    public DbSet<PayrollTaxBracketSet> PayrollTaxBracketSets => Set<PayrollTaxBracketSet>();
+    public DbSet<PayrollTaxBracket> PayrollTaxBrackets => Set<PayrollTaxBracket>();
+    public DbSet<MartyrsFundRate> MartyrsFundRates => Set<MartyrsFundRate>();
+    public DbSet<OvertimeRate> OvertimeRates => Set<OvertimeRate>();
+    public DbSet<LeaveEntitlementRule> LeaveEntitlementRules => Set<LeaveEntitlementRule>();
+    public DbSet<PenaltyDeductionCap> PenaltyDeductionCaps => Set<PenaltyDeductionCap>();
+    public DbSet<NoticePeriodRule> NoticePeriodRules => Set<NoticePeriodRule>();
+    public DbSet<EndOfServicePolicy> EndOfServicePolicies => Set<EndOfServicePolicy>();
 
     // System-wide (00-System-Wide-Corrections-01.md, sections 3-4) — not company-scoped.
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
