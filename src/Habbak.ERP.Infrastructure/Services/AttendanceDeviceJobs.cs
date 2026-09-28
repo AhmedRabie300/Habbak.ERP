@@ -64,7 +64,7 @@ public sealed class AttendanceDeviceJobs(IServiceScopeFactory scopes, ILogger lo
 
     /// <summary>المنطق الفعلي، مفصول عن إنشاء الـScope عشان الاختبارات تقدر تستدعيه مباشرة بـ
     /// AppDbContext حقيقي (نفس فلسفة IngestDevicePunchesCommandHandler/RawPunchIngestor).</summary>
-    internal static async Task<AttendanceDeviceJobResult> ProcessCompanyAsync(long companyId, IApplicationDbContext db, ILogger logger, CancellationToken cancellationToken)
+    public static async Task<AttendanceDeviceJobResult> ProcessCompanyAsync(long companyId, IApplicationDbContext db, ILogger logger, CancellationToken cancellationToken)
     {
         // §4 بند 2 — "بيفضل قابل لإعادة المحاولة (مش Terminal)": أي صف Skipped (NoEmployeeMapping)
         // بيتحاول تاني كل تشغيلة، لحد ما الربط يتضاف.
