@@ -131,6 +131,16 @@ public class NoticePeriodRuleConfiguration : IEntityTypeConfiguration<NoticePeri
     }
 }
 
+public class OvertimeLimitRuleConfiguration : IEntityTypeConfiguration<OvertimeLimitRule>
+{
+    public void Configure(EntityTypeBuilder<OvertimeLimitRule> builder)
+    {
+        builder.ToTable("OvertimeLimitRules");
+
+        builder.HasIndex(r => new { r.CompanyId, r.EffectiveFrom });
+    }
+}
+
 public class EndOfServicePolicyConfiguration : IEntityTypeConfiguration<EndOfServicePolicy>
 {
     public void Configure(EntityTypeBuilder<EndOfServicePolicy> builder)

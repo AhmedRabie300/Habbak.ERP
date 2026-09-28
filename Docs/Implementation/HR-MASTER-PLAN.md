@@ -298,12 +298,14 @@ Sub-Batches:
 
 ### Phase 4 — الرواتب
 
-**النطاق** (محدّث بعد `Phase-4-Research.md` والقرارات المعتمدة 2026-09-28): **11 جدول قانوني مؤرّخ** —
+**النطاق** (محدّث بعد `Phase-4-Research.md` والقرارات المعتمدة 2026-09-28): **12 جدول قانوني مؤرّخ** —
 `MinimumWage`, `SocialInsuranceRate`, `InsurableWageLimit`, `PayrollTaxBracketSet`+`PayrollTaxBracket`
 (جدولين حقيقيين، العدد النهائي 10 مش "9 أو 10")، `MartyrsFundRate`, `OvertimeRate`,
 `LeaveEntitlementRule`, `PenaltyDeductionCap`, `NoticePeriodRule`، + **`EndOfServicePolicy`** (أُضيف
 هنا رغم إنه مش معدود صراحة في أي Phase أصلًا — Phase-4-Research.md §2.2 — لأن قالب مخصص نهاية الخدمة
-الشهري محتاج `PolicyType` عشان يقرر يرحّل ولا لأ) — + `SalaryComponent`/`SalaryStructure`(+Line)/
+الشهري محتاج `PolicyType` عشان يقرر يرحّل ولا لأ) + **`OvertimeLimitRule`** (جدول 12، اتكشف لازم
+أثناء بناء المحرك نفسه في 4.4 — رقم 20 بيسمّيه "جدول مؤرّخ" منفصل بس §2.4 ماسردوش بالاسم أصلًا) —
++ `SalaryComponent`/`SalaryStructure`(+Line)/
 `EmployeeSalary` + `PayrollPeriod`/`PayrollRun`/`PayrollLine`/`Payslip` + **`EmployeeTaxProfile`**
 (أُضيف هنا من Phase 5 — قاعدة 37 والـ`AnnualTaxSettlement` محتاجينه فعليًا للتراكم السنوي، والقسائم
 بعد الاعتماد بتتجمّد فمفيش مجال لتقريب مؤقت يتصحح لاحقًا) + `TipsDistribution`+`TipsDistributionLine`
@@ -334,8 +336,11 @@ Sub-Batches:
 - مراجعة استثناءات إلزامية قبل الاعتماد (صافي سالب، تحت الحد الأدنى، تغيّر مفاجئ، موظف `Active` بدون
   تسجيل تأميني) — بتطلق `NotificationType.PayrollExceptionReview` (موجود من Phase 2.5، Schema-ready
   من غير أي مُرسِل لحد دلوقتي).
-- خطوة اعتماد إضافية على سلسلة الإضافي لو `OvertimeRequest` تجاوز الحد الشهري (مؤجّلة من Phase 3،
-  `Phase-3-Final.md §7` بند 5 — الجدول القانوني نفسه مبني دلوقتي في 4.2).
+- خطوة اعتماد إضافية على سلسلة الإضافي لو `OvertimeRequest` تجاوز الحد اليومي أو الشهري (`OvertimeLimitRule`
+  الجدول 12، مؤجّلة من Phase 3، `Phase-3-Final.md §7` بند 5) — **مش خطوة `ApprovalWorkflow` حقيقية
+  تانية**: `ApprovalWorkflowAssignment` دلوقتي مستوى واحد بس لكل شاشة (Phase-4-Research.md §1.8)،
+  فمفيش طريقة تعبّر عن "خطوة إضافية بس لو تجاوز". البديل المطبَّق: `OvertimeRequest.ExceedsLimit` +
+  `HrOverrideApprovedByUserId` — تشغيل الرواتب بيتجاهل أي طلب متجاوز من غير Override صريح من HR.
 
 **التكامل المحاسبي** (6 قوالب عن طريق `IPostingService`، مش 7 — قالب "صرف سلفة" أُجّل لـ Phase 5 مع
 كيان `EmployeeAdvance` نفسه؛ `CostCenterId` عن طريق Dimensions [`PostingGroupItem.Dimensions`] مش
@@ -477,11 +482,15 @@ User: "كمّل Phase X+1"
 
 **Phase 4 (جارية)** — `Phase-4-Research.md` (4.1) + 4.2 (11 جدول قانوني + `IEffectiveDatedEntity`) +
 4.3 (`SalaryComponent`..`Payslip` + `TipsDistribution`+Line + `EmployeeTaxProfile` + enum
-`PayrollLineSource`) منجزين، Migrations اتولّدت ضد الـModel بس (Cloud، بدون Apply). تفاصيل كل
-Sub-Batch في §7 Amendments Log تحت. 4.4 (Payroll Engine) جارية.
+`PayrollLineSource`) + **4.4 (Payroll Engine)** منجزين: `PayrollCalculationService` (المعادلة كاملة
+عن طريق قاعدة 28)، `PayrollRunKeys`/Idempotency، `CreatePayrollPeriodCommand`/`CreatePayrollRunCommand`/
+`CalculatePayrollRunCommand`/`SubmitPayrollRunForApprovalCommand`، `PayrollRunApprovalOutcomeHandler`،
+جدول قانوني 12 جديد `OvertimeLimitRule` + `OvertimeRequest.ExceedsLimit`/`HrOverrideApprovedByUserId`
+(بديل عملي لخطوة اعتماد إضافية، قاعدة 20). Migrations اتولّدت ضد الـModel بس (Cloud، بدون Apply).
+تفاصيل كل Sub-Batch في §7 Amendments Log تحت.
 
 **قادمة (لسه محدش بدأ فيها)**:
-- باقي Phase 4 (4.4 → 4.8) ثم Phase 5 → Phase 7.
+- باقي Phase 4 (4.5 → 4.8) ثم Phase 5 → Phase 7.
 
 > ملاحظة دقة: القالب الأصلي لهذا الملف افترض إن Phase 1.2 "جارية" — ده مش صحيح فعليًا وقت كتابة هذا الملف، لسه محدش بدأ فيها. صُحّح هنا بدل ما يتكرر الافتراض.
 
@@ -507,4 +516,5 @@ Sub-Batch في §7 Amendments Log تحت. 4.4 (Payroll Engine) جارية.
 | 2026-09-28 | **Phase 3C اعتُمدت رسميًا (Approved)** بعد جولتين تحقق كاملتين (Cloud ثم Local) | `Phase-3C-Final.md §6` (Local Verification Results) — 627 تشغيلة اختبار (96 HR + 245 IntegrationTests + 277 ApiTests + 9 Frontend)، صفر Failures، صفر Bugs مكتشفة. تحقق يدوي End-to-End أكّد الأربع بنود كاملة (بنود العقد عن طريق Renew، مرفقات العقود/الشهادات، Hiring Wizard) شامل صحة الترميز العربي. لا يوجد Blocker لبدء Phase 4 |
 | 2026-09-28 | Phase 4 Research Pass: عدد الجداول القانونية اتثبّت 10 (مش "9 أو 10")، `EndOfServicePolicy` أُضيف كجدول قانوني 11، `TipsDistribution`+`TipsDistributionLine` اتسحبوا لـ Phase 4 (مش Phase 5)، قالب "صرف سلفة" أُجّل لـ Phase 5 مع `EmployeeAdvance` نفسه (Phase 4 = 6 قوالب ترحيل مش 7)، خطوة اعتماد "الإضافي فوق الحد الشهري" (مؤجّلة من Phase 3) اتضافت لـ 4.4، و3 حقول `HrSettings` (`MonthBasis`/`DefaultCutoffDay`/`CompanyDefaultApproverUserId`) هتتفتح في شاشة `HR_SETTINGS` عن طريق 4.6 | `Phase-4-Research.md §2.1-§2.7`، كل القرارات دي اتاخدت صراحة بعد "موافق" المستخدم على الـ Research Pass |
 | 2026-09-28 | `EmployeeTaxProfile` اتسحب من الـ9 كيانات بتاعة Phase 5 لـ Phase 4.3، و`PayrollLine.SalaryComponentId` اتغيّر لـ Nullable مع enum جديد `PayrollLineSource` (`LegalSocialInsurance`/`LegalTax`/`LegalMartyrsFund`/`PriorPeriodAdjustment`/...) | اكتُشف أثناء تصميم محرك الحساب (4.4، قبل أي كود): قاعدة 37 ("الضريبة بتتحسب سنويًا وبتتقسّط شهريًا (`EmployeeTaxProfile` التراكمي)") و`PayrollRunType.AnnualTaxSettlement` (مبني فعليًا في 4.3) بيعتمدوا على تراكم سنوي حقيقي مش تقريب شهري، والقسائم المرحّلة بتتجمّد (قاعدة 29) فمفيش مجال لتصحيح لاحق. وبشكل منفصل، `SalaryComponent.CalculationMethod` (`Fixed`/`PercentOfBasic`/`Hourly`/`Formula`) مفيهوش حالة "من جدول قانوني"، فخصومات التأمينات/الضريبة/صندوق الشهداء مالهاش `SalaryComponent` حقيقي تتربط بيه — قرار المستخدم: `SalaryComponentId` Nullable بدل فرض Seeding لمكونات نظام وهمية |
+| 2026-09-28 | Phase 4.4 — جدول قانوني 12 جديد `OvertimeLimitRule` (مش معدود في §2.4 الأصلي، رقم 20 بيسمّيه "جدول مؤرّخ" بس بدون تفصيل) + `OvertimeRequest.ExceedsLimit`/`HrOverrideApprovedByUserId` بدل خطوة `ApprovalWorkflow` حقيقية تانية | `ApprovalWorkflowAssignment` (Phase 2) بيدعم سلسلة واحدة بس لكل Screen (فهرس فريد مفلتر)، فمفيش آلية جاهزة تعبّر عن "خطوة إضافية بس لو تجاوز حد" لنفس الشاشة — مُوثّق أصلًا كفجوة في Phase-4-Research.md §1.8. القرار: Override يدوي من HR بدل إعادة تصميم محرك الاعتمادات (ده كان هيوسّع نطاق 4.4 لتغيير جوهري في Phase 2 يأثر على شاشات تانية زي السلف/المكافآت) |
 | — | — | — |

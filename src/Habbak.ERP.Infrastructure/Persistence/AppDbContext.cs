@@ -255,6 +255,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<PenaltyDeductionCap> PenaltyDeductionCaps => Set<PenaltyDeductionCap>();
     public DbSet<NoticePeriodRule> NoticePeriodRules => Set<NoticePeriodRule>();
     public DbSet<EndOfServicePolicy> EndOfServicePolicies => Set<EndOfServicePolicy>();
+    public DbSet<OvertimeLimitRule> OvertimeLimitRules => Set<OvertimeLimitRule>();
 
     // Phase 4 — Payroll core (Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.3).
     public DbSet<SalaryComponent> SalaryComponents => Set<SalaryComponent>();

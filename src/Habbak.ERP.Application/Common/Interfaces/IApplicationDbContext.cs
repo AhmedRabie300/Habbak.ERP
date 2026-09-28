@@ -121,6 +121,7 @@ public interface IApplicationDbContext
     DbSet<PenaltyDeductionCap> PenaltyDeductionCaps { get; }
     DbSet<NoticePeriodRule> NoticePeriodRules { get; }
     DbSet<EndOfServicePolicy> EndOfServicePolicies { get; }
+    DbSet<OvertimeLimitRule> OvertimeLimitRules { get; }
 
     // Phase 4 — Payroll core (Docs/Implementation/HR-MASTER-PLAN.md §Phase 4, Sub-Batch 4.3).
     DbSet<SalaryComponent> SalaryComponents { get; }

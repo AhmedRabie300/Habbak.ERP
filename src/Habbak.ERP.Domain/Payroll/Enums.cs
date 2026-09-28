@@ -43,7 +43,12 @@ public enum PayrollLineSource
     LegalSocialInsurance = 7,
     LegalTax = 8,
     LegalMartyrsFund = 9,
-    PriorPeriodAdjustment = 10
+    PriorPeriodAdjustment = 10,
+
+    /// <summary>EmploymentContract.BasicSalary itself — added in Sub-Batch 4.4 once the engine needed
+    /// a source for it. Not "EmployeeSalary" because Basic isn't a SalaryComponent-tied row; carries
+    /// no SalaryComponentId, same as the Legal* values.</summary>
+    Basic = 11
 }
 
 /// <summary>§2.3/§4.7 — Included (line 128/327 of the module doc) is reached once the distribution's

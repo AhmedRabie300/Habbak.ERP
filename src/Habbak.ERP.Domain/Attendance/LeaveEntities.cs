@@ -130,4 +130,12 @@ public class OvertimeRequest : AuditableEntity, ICompanyScopedEntity, IBranchSco
 
     /// <summary>بيتملى من Attendance.RecomputeDaily لما فيه طلب Approved لنفس اليوم.</summary>
     public int? ActualMinutes { get; set; }
+
+    /// <summary>قاعدة 20 (Sub-Batch 4.4) — اتحدد وقت Submit لو الطلب ده لوحده، أو تراكمه مع باقي
+    /// طلبات الشهر المعتمدة، بيتخطى OvertimeLimitRule الساري وقت WorkDate. مش خطوة اعتماد تانية
+    /// حقيقية جوه المحرك (Phase-4-Research.md §1.8 — ApprovalWorkflowAssignment مبني بمستوى واحد بس
+    /// لكل شاشة دلوقتي، مش عتبات متدرجة) — بديل عملي: تشغيل الرواتب بيتجاهل أي طلب Exceeds من غير
+    /// HrOverrideApprovedByUserId، وده اللي بيعمل فعليًا أثر "خطوة إضافية" قبل ما الإضافي يتصرف.</summary>
+    public bool ExceedsLimit { get; set; }
+    public long? HrOverrideApprovedByUserId { get; set; }
 }

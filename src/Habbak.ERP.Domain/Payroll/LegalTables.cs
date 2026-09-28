@@ -195,3 +195,18 @@ public enum EndOfServicePolicyType
     None = 1,
     Contractual = 2
 }
+
+/// <summary>Daily/monthly overtime ceiling — rule 20 names this as its own "جدول مؤرّخ" separate from
+/// the nine-plus-one tables §2.4 actually lists by name; added here (Sub-Batch 4.4, not 4.2) because
+/// it only became necessary once the engine needed to detect "over the limit" (Phase-4-Research.md
+/// §2.6's approved decision). Either bound may be null (no ceiling on that dimension).</summary>
+public class OvertimeLimitRule : AuditableEntity, ICompanyScopedEntity, IEffectiveDatedEntity
+{
+    public long? CompanyId { get; set; }
+
+    public int? MaxMinutesPerDay { get; set; }
+    public int? MaxMinutesPerMonth { get; set; }
+
+    public DateOnly EffectiveFrom { get; set; }
+    public DateOnly? EffectiveTo { get; set; }
+}

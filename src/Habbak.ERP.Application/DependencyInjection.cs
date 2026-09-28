@@ -26,6 +26,8 @@ public static class DependencyInjection
         // Phase 3 POS Integration — نداء مباشر بعد SaveChanges بتاع OpenShift/CloseShift (Phase-3-Research.md §3.1).
         services.AddScoped<Common.Interfaces.ITimeEntryFeedService, Attendance.Services.TimeEntryFeedService>();
 
+        services.AddScoped<Payroll.PayrollCalculationService>();
+
         services.AddMemoryCache();
         services.AddScoped<Settings.Auth.SessionIssuer>();
         services.AddScoped<Settings.Access.IUserAccessService, Settings.Access.UserAccessService>();
