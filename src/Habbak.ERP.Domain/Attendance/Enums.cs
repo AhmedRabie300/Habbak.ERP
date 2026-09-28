@@ -23,3 +23,17 @@ public enum LeaveBalanceMovementType { Accrual = 1, Usage = 2, Reversal = 3, Car
 
 /// <summary>قاعدة 18 — القيم الابتدائية القانونية في `10-Module-HR-Payroll.md §2.4` (OvertimeRate، Phase 4).</summary>
 public enum OvertimeType { Day = 1, Night = 2, RestDay = 3, PublicHoliday = 4 }
+
+// Phase 3B (Fingerprint devices) — Phase-3B-Research.md §3.
+
+/// <summary>مصدر البصمة الخام — نفس الـEnum مستخدَم في RawPunch وAttendanceDeviceLog.</summary>
+public enum RawPunchSourceType { Push = 1, FileImport = 2 }
+
+/// <summary>Phase-3B-Research.md §3.1 — الخام مابيتعدّلش أبدًا، العمودين دول بس هما اللي بيتحدّثوا بعد الإدخال.</summary>
+public enum RawPunchProcessingStatus { Pending = 1, Processed = 2, Skipped = 3 }
+
+/// <summary>سبب تخطّي بصمة خام (§4 بند 2) — بيفضل قابل لإعادة المحاولة (مش Terminal) عدا DuplicatePunch
+/// (اللي أصلًا مابيتسجلش كصف Pending من الأساس، Unique Index بيمنعه عند الإدخال، §3.1).</summary>
+public enum RawPunchSkipReason { NoEmployeeMapping = 1, DeviceNotRegistered = 2, DuplicatePunch = 3 }
+
+public enum AttendanceDeviceLogStatus { Success = 1, PartialFailure = 2, Failed = 3 }

@@ -62,7 +62,7 @@ public class EmployeeWeeklyRestDays : AuditableEntity, ICompanyScopedEntity, IEm
 /// مصدر الحقيقة الوحيد للحضور (قاعدة 10) — مابيتعدّلش ولا بيتمسح، التصحيح بصف جديد
 /// (<see cref="IsCorrection"/>/<see cref="CorrectsTimeEntryId"/>). <see cref="Status"/> نفسها
 /// قابلة للتغيير (قبول/رفض مقترح) — ده انتقال حالة على نفس الصف، مش تعديل للبيانات الزمنية نفسها.
-/// <see cref="DeviceId"/> عمود خام بدون FK لحد Phase 3B (AttendanceDevice لسه مش موجود).
+/// <see cref="DeviceId"/> — Phase 3B: FK حقيقي على AttendanceDevices(Id) دلوقتي (Migration، مش عمود جديد).
 /// </summary>
 public class TimeEntry : AuditableEntity, ICompanyScopedEntity, IBranchScopedEntity, IEmployeeScopedEntity
 {
@@ -80,8 +80,9 @@ public class TimeEntry : AuditableEntity, ICompanyScopedEntity, IBranchScopedEnt
     public long? POSShiftId { get; set; }
     public Shift? POSShift { get; set; }
 
-    /// <summary>Phase 3B (AttendanceDevice) — عمود خام بدون FK دلوقتي.</summary>
+    /// <summary>Phase 3B — بصمة من جهاز (Source = Device). FK على AttendanceDevices(Id).</summary>
     public long? DeviceId { get; set; }
+    public AttendanceDevice? Device { get; set; }
 
     public TimeEntryStatus Status { get; set; } = TimeEntryStatus.Accepted;
 

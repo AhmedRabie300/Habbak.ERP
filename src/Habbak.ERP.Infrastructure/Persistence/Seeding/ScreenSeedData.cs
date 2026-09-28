@@ -33,6 +33,11 @@ public static class ScreenSeedData
         ("HR_OVERTIME", "طلبات الإضافي", "Overtime Requests", "HR"),
         // Remarks8 Item 7 — Phase 3 Amendment.
         ("HR_SHIFT_SCHEDULE_GENERATOR", "توليد جداول الورديات", "Shift Schedule Generator", "HR"),
+
+        // Fingerprint devices (Docs/Implementation/Phase-3B-Research.md §Phase 3B).
+        ("HR_EMPLOYEE_DEVICE_MAPPINGS", "ربط الموظفين بأجهزة البصمة", "Employee Device Mappings", "HR"),
+        ("HR_ATTENDANCE_DEVICE_LOGS", "سجل مزامنة أجهزة البصمة", "Attendance Device Sync Log", "HR"),
+        ("HR_ATTENDANCE_RECONCILIATION", "تسوية بصمات الأجهزة", "Attendance Reconciliation", "HR"),
     ];
 
     public static List<Screen> Build()

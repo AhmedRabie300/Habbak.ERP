@@ -61,6 +61,8 @@ public class TimeEntryConfiguration : IEntityTypeConfiguration<TimeEntry>
         builder.HasOne(t => t.Employee).WithMany().HasForeignKey(t => t.EmployeeId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(t => t.POSShift).WithMany().HasForeignKey(t => t.POSShiftId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(t => t.CorrectsTimeEntry).WithMany().HasForeignKey(t => t.CorrectsTimeEntryId).OnDelete(DeleteBehavior.Restrict);
+        // Phase 3B — FK الناقص المؤجَّل من Phase 3 (Phase-3B-Research.md §1.1).
+        builder.HasOne(t => t.Device).WithMany().HasForeignKey(t => t.DeviceId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(t => new { t.EmployeeId, t.TimestampUtc });
         // Idempotency check قبل إنشاء صف مقترح جديد من POS.Shift (Phase-3-Research.md §3.3).

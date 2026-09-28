@@ -246,6 +246,12 @@ public static class MenuItemSeedData
             Leaf(hrGroup, "HR_LEAVE_REQUESTS", "طلبات الإجازات", "Leave Requests", 18, "/hr/leave-requests"),
             Leaf(hrGroup, "HR_OVERTIME", "طلبات الإضافي", "Overtime Requests", 19, "/hr/overtime-requests"),
 
+            // Fingerprint devices (Docs/Implementation/Phase-3B-Research.md §Phase 3B).
+            Leaf(hrGroup, "HR_ATTENDANCE_DEVICES", "أجهزة البصمة", "Attendance Devices", 20, "/hr/attendance-devices"),
+            Leaf(hrGroup, "HR_EMPLOYEE_DEVICE_MAPPINGS", "ربط الموظفين بالأجهزة", "Employee Device Mappings", 21, "/hr/employee-device-mappings"),
+            Leaf(hrGroup, "HR_ATTENDANCE_DEVICE_LOGS", "سجل مزامنة الأجهزة", "Device Sync Log", 22, "/hr/attendance-device-logs"),
+            Leaf(hrGroup, "HR_ATTENDANCE_RECONCILIATION", "تسوية بصمات الأجهزة", "Attendance Reconciliation", 23, "/hr/attendance-reconciliation"),
+
             settingsGroup,
             Leaf(settingsGroup, "SETTINGS_CODING_RULES", "إعدادات الشاشات", "Screen Settings", 1, "/settings/coding-rules"),
             Leaf(settingsGroup, "SETTINGS_COMPANIES", "الشركات", "Companies", 2, "/settings/companies"),

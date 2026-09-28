@@ -235,6 +235,12 @@ public class AppDbContext : DbContext, IApplicationDbContext
     // Remarks8 Item 6 — Pattern الراحة الأسبوعية (Phase 3 Amendment).
     public DbSet<Habbak.ERP.Domain.Attendance.EmployeeWeeklyRestDays> EmployeeWeeklyRestDays => Set<Habbak.ERP.Domain.Attendance.EmployeeWeeklyRestDays>();
 
+    // Phase 3B — تكامل أجهزة البصمة (Docs/Implementation/Phase-3B-Research.md).
+    public DbSet<Habbak.ERP.Domain.Attendance.AttendanceDevice> AttendanceDevices => Set<Habbak.ERP.Domain.Attendance.AttendanceDevice>();
+    public DbSet<Habbak.ERP.Domain.Attendance.AttendanceDeviceLog> AttendanceDeviceLogs => Set<Habbak.ERP.Domain.Attendance.AttendanceDeviceLog>();
+    public DbSet<Habbak.ERP.Domain.Attendance.EmployeeDeviceMapping> EmployeeDeviceMappings => Set<Habbak.ERP.Domain.Attendance.EmployeeDeviceMapping>();
+    public DbSet<Habbak.ERP.Domain.Attendance.RawPunch> RawPunches => Set<Habbak.ERP.Domain.Attendance.RawPunch>();
+
     // System-wide (00-System-Wide-Corrections-01.md, sections 3-4) — not company-scoped.
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<FieldLabel> FieldLabels => Set<FieldLabel>();

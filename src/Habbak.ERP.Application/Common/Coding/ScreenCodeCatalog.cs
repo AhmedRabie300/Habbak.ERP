@@ -97,7 +97,10 @@ public static class ScreenCodeCatalog
         // Lookups: يدوي افتراضيًا.
         new("HR_WORK_SHIFTS", "ورديات العمل", "Work Shifts", false, CodeFormat.LettersAndNumbers, null, 5),
         new("HR_LEAVE_TYPES", "أنواع الإجازات", "Leave Types", false, CodeFormat.LettersAndNumbers, null, 5),
-        new("HR_HOLIDAYS", "العطلات", "Holidays", false, CodeFormat.LettersAndNumbers, null, 5)
+        new("HR_HOLIDAYS", "العطلات", "Holidays", false, CodeFormat.LettersAndNumbers, null, 5),
+
+        // Fingerprint devices (Docs/Implementation/Phase-3B-Research.md §Phase 3B) — Lookup زي باقي أجهزة/معدات النظام.
+        new("HR_ATTENDANCE_DEVICES", "أجهزة البصمة", "Attendance Devices", false, CodeFormat.LettersAndNumbers, null, 5)
     ];
 
     public static ScreenCodeDefinition? Find(string screenCode) => All.FirstOrDefault(s => s.ScreenCode == screenCode);

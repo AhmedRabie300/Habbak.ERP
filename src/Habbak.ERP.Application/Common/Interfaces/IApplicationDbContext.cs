@@ -101,6 +101,12 @@ public interface IApplicationDbContext
     DbSet<Habbak.ERP.Domain.Attendance.OvertimeRequest> OvertimeRequests { get; }
     DbSet<Habbak.ERP.Domain.Attendance.EmployeeWeeklyRestDays> EmployeeWeeklyRestDays { get; }
 
+    // Phase 3B — تكامل أجهزة البصمة (Docs/Implementation/Phase-3B-Research.md).
+    DbSet<Habbak.ERP.Domain.Attendance.AttendanceDevice> AttendanceDevices { get; }
+    DbSet<Habbak.ERP.Domain.Attendance.AttendanceDeviceLog> AttendanceDeviceLogs { get; }
+    DbSet<Habbak.ERP.Domain.Attendance.EmployeeDeviceMapping> EmployeeDeviceMappings { get; }
+    DbSet<Habbak.ERP.Domain.Attendance.RawPunch> RawPunches { get; }
+
     // System-wide (00-System-Wide-Corrections-01.md, sections 3-4)
     DbSet<MenuItem> MenuItems { get; }
     DbSet<FieldLabel> FieldLabels { get; }
