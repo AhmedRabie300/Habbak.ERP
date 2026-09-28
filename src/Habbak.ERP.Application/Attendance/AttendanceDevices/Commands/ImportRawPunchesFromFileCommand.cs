@@ -25,7 +25,7 @@ public sealed class ImportRawPunchesFromFileCommandValidator : AbstractValidator
     }
 }
 
-public sealed class ImportRawPunchesFromFileCommandHandler(ISender mediator, IApplicationDbContext db) : IRequestHandler<ImportRawPunchesFromFileCommand, IngestResultDto>
+public sealed class ImportRawPunchesFromFileCommandHandler(IApplicationDbContext db) : IRequestHandler<ImportRawPunchesFromFileCommand, IngestResultDto>
 {
     public async Task<IngestResultDto> Handle(ImportRawPunchesFromFileCommand request, CancellationToken cancellationToken)
     {
@@ -35,6 +35,6 @@ public sealed class ImportRawPunchesFromFileCommandHandler(ISender mediator, IAp
         }
 
         var lines = RawPunchFileParser.Parse(request.FileName, request.Content);
-        return await mediator.Send(new IngestDevicePunchesCommand(request.AttendanceDeviceId, lines, RawPunchSourceType.FileImport), cancellationToken);
+        return await RawPunchIngestor.IngestAsync(db, request.AttendanceDeviceId, lines, RawPunchSourceType.FileImport, cancellationToken);
     }
 }
