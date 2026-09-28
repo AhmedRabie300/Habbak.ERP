@@ -22,8 +22,17 @@ namespace Habbak.ERP.API.Controllers.HR;
 [Route("api/v1/hr/attendance-devices")]
 public class AttendanceDevicesController(ISender mediator) : ControllerBase
 {
+    /// <summary>10 MB — نفس حد AttachmentsController.</summary>
+    private const long MaxFileSizeBytes = 10 * 1024 * 1024;
+
     public sealed record CreateRequest(string? Code, string NameAr, string NameEn, string? Model, string? SerialNumber, long? BranchId);
     public sealed record UpdateRequest(string NameAr, string NameEn, string? Model, string? SerialNumber, long? BranchId, bool IsActive);
+
+    /// <summary>Swashbuckle محتاج IFormFile جوه Model class مستقل (نفس ملاحظة AttachmentsController).</summary>
+    public sealed class ImportRequest
+    {
+        public IFormFile File { get; set; } = null!;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetList(CancellationToken cancellationToken) => Ok(await mediator.Send(new GetAttendanceDevicesListQuery(), cancellationToken));
@@ -52,6 +61,18 @@ public class AttendanceDevicesController(ISender mediator) : ControllerBase
     [HttpPost("{id:long}/regenerate-secret")]
     public async Task<IActionResult> RegenerateSecret(long id, CancellationToken cancellationToken) =>
         Ok(await mediator.Send(new RegenerateAttendanceDeviceSecretCommand(id), cancellationToken));
+
+    /// <summary>Sub-Batch 3B.5 — رفع يدوي (تصدير USB: csv/txt/dat/xlsx)، نفس مسار المعالجة بتاع الـPush.</summary>
+    [HttpPost("{id:long}/import")]
+    [RequestSizeLimit(MaxFileSizeBytes)]
+    public async Task<IActionResult> Import(long id, [FromForm] ImportRequest request, CancellationToken cancellationToken)
+    {
+        await using var stream = new MemoryStream();
+        await request.File.CopyToAsync(stream, cancellationToken);
+
+        var result = await mediator.Send(new ImportRawPunchesFromFileCommand(id, request.File.FileName, stream.ToArray()), cancellationToken);
+        return Ok(result);
+    }
 }
 
 [ApiController]
