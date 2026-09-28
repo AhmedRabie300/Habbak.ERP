@@ -85,7 +85,7 @@ public class AttendanceDevicesApiTests(AccountingApiFactory factory) : IClassFix
         var admin = Client(company.CompanyId);
         var serial = $"SN{Guid.NewGuid():N}"[..16];
 
-        var create = await admin.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { nameAr = "جهاز", nameEn = "Device", model = "ZKTeco K40", serialNumber = serial });
+        var create = await admin.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { code = $"D{Guid.NewGuid():N}"[..8], nameAr = "جهاز", nameEn = "Device", model = "ZKTeco K40", serialNumber = serial });
         create.EnsureSuccessStatusCode();
         var created = await create.Content.ReadFromJsonAsync<JsonElement>();
         var id = created.GetProperty("id").GetInt64();
@@ -118,7 +118,7 @@ public class AttendanceDevicesApiTests(AccountingApiFactory factory) : IClassFix
         var cashierUserId = await SeedUserAsync(company, SystemRoles.Cashier);
         var cashier = Client(company.CompanyId, cashierUserId, SystemRoles.Cashier);
 
-        var denied = await cashier.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { nameAr = "س", nameEn = "X" });
+        var denied = await cashier.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { code = $"D{Guid.NewGuid():N}"[..8], nameAr = "س", nameEn = "X" });
         Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
         Assert.Equal("PERMISSION-DENIED", await ErrorCodeAsync(denied));
 
@@ -127,7 +127,7 @@ public class AttendanceDevicesApiTests(AccountingApiFactory factory) : IClassFix
             new[] { new { screenCode = "HR_ATTENDANCE_DEVICES", canView = true, canAdd = true, canEdit = false, canDelete = false, canPrint = false, canExport = false, canApprove = false } });
         Assert.Equal(HttpStatusCode.NoContent, grant.StatusCode);
 
-        var allowed = await cashier.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { nameAr = "س", nameEn = "X" });
+        var allowed = await cashier.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { code = $"D{Guid.NewGuid():N}"[..8], nameAr = "س", nameEn = "X" });
         Assert.Equal(HttpStatusCode.OK, allowed.StatusCode);
     }
 
@@ -140,7 +140,7 @@ public class AttendanceDevicesApiTests(AccountingApiFactory factory) : IClassFix
         var admin = Client(company.CompanyId);
         var serial = $"SN{Guid.NewGuid():N}"[..16];
 
-        var create = await admin.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { nameAr = "جهاز", nameEn = "Device", serialNumber = serial });
+        var create = await admin.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { code = $"D{Guid.NewGuid():N}"[..8], nameAr = "جهاز", nameEn = "Device", serialNumber = serial });
         create.EnsureSuccessStatusCode();
         var secret = (await create.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("deviceSecret").GetString();
 
@@ -163,7 +163,7 @@ public class AttendanceDevicesApiTests(AccountingApiFactory factory) : IClassFix
         var company = await SeedCompanyAsync();
         var admin = Client(company.CompanyId);
         var serial = $"SN{Guid.NewGuid():N}"[..16];
-        (await admin.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { nameAr = "جهاز", nameEn = "Device", serialNumber = serial })).EnsureSuccessStatusCode();
+        (await admin.PostAsJsonAsync("/api/v1/hr/attendance-devices", new { code = $"D{Guid.NewGuid():N}"[..8], nameAr = "جهاز", nameEn = "Device", serialNumber = serial })).EnsureSuccessStatusCode();
 
         var anonymous = factory.CreateClient();
         anonymous.DefaultRequestHeaders.Add("X-Device-Secret", "not-the-real-secret");
